@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HCLTech | Continuous Improvement & Lean Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f1f5f9; color: #0f172a;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px 14px;
+    }
+    .portal-card {
+      background: #ffffff; width: 100%; max-width: 520px;
+      border-radius: 8px; border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden;
+    }
+    .portal-header {
+      background: linear-gradient(135deg, #0d3b66 0%, #005691 100%);
+      padding: 20px; color: #ffffff; display: flex; align-items: center; gap: 14px;
+      border-bottom: 3px solid #00a896;
+    }
+    .header-text h1 { font-size: 18px; font-weight: 700; }
+    .header-text p { font-size: 12px; color: #bae6fd; }
+    .portal-body { padding: 24px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px; }
+    input[type="text"], textarea {
+      width: 100%; padding: 10px; font-size: 14px; border: 1px solid #cbd5e1;
+      border-radius: 6px; background: #f8fafc; font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .btn-submit {
+      background: #005691; color: #fff; border: none; width: 100%;
+      padding: 12px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;
+    }
+    .btn-submit:hover { background: #034473; }
+    .ticket-view { display: none; }
+    .status-badge {
+      display: inline-block; padding: 6px 12px; font-size: 13px;
+      font-weight: 700; border-radius: 20px; background: #e0f2fe; color: #0369a1;
+      margin-bottom: 12px;
+    }
+    .chat-box {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 16px; min-height: 100px; margin-top: 14px;
+    }
+    .chat-bubble-admin {
+      background: #e11d48; color: white; padding: 12px 16px; border-radius: 8px;
+      margin-top: 8px; font-size: 15px; line-height: 1.5; font-weight: 500;
+    }
+    #adminView { display: none; }
+    .admin-card { background: #1e293b; color: #f8fafc; padding: 22px; border-radius: 12px; }
+    .admin-box { background: #0f172a; padding: 14px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; line-height: 1.6; border: 1px solid #334155; }
+    .admin-textarea { background: #0f172a; color: white; border: 1px solid #475569; width: 100%; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
+    .admin-btn { background: #38bdf8; color: #0f172a; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; }
+    @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <div class="portal-card" id="userCard">
+    <div class="portal-header">
+      <div class="header-text">
+        <h1>HCLTech Lean Innovation Desk</h1>
+        <p>Continuous Improvement & Value Creation Initiative</p>
+      </div>
+    </div>
+
+    <div class="portal-body">
+      <form id="leanForm" onsubmit="submitProposal(event)">
+        <div class="form-grid">
+          <div>
+            <label>Employee Name</label>
+            <input type="text" id="empName" placeholder="Full Name" required />
+          </div>
+          <div>
+            <label>Employee ID</label>
+            <input type="text" id="empId" placeholder="e.g. 52148903" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>New Lean Idea / Subject</label>
+          <input type="text" id="leanIdea" placeholder="Title of suggestion" required />
+        </div>
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" id="projectName" placeholder="Account Name" required />
+        </div>
+        <div class="form-group">
+          <label>Detailed Suggestion Box</label>
+          <textarea id="suggestion" placeholder="Describe the operational friction..." required></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="btnText">Submit Lean Proposal</button>
+      </form>
+
+      <div id="ticketView" class="ticket-view">
+        <span class="status-badge" id="ticketStatus">Status: Pending Assessment</span>
+        <p style="font-size: 13px; color: #64748b;">Ticket Reference: <strong id="ticketId"></strong></p>
+        
+        <div class="chat-box">
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 6px;">Desk Review Log:</p>
+          <div id="adminReplies">
+            <p style="font-size: 13px; color: #475569; font-style: italic;">Routing to desk operator. Keep this open...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="portal-card admin-card" id="adminView">
+    <h2 style="color: #38bdf8; margin-bottom: 12px; font-size: 18px;">Control Operator (You)</h2>
+    <div class="admin-box" id="incoming">Waiting for her to submit...</div>
+    <textarea class="admin-textarea" id="replyMsg" rows="3" placeholder="Type your surprise reply to show on her screen..."></textarea>
+    <button class="admin-btn" onclick="sendReply()">Push Reply to Her Screen</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
+      authDomain: "hcl-portal-61844.firebaseapp.com",
+      projectId: "hcl-portal-61844",
+      storageBucket: "hcl-portal-61844.firebasestorage.app",
+      messagingSenderId: "706863694182",
+      appId: "1:706863694182:web:53f71d16ae0f8697e908a7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    if (window.location.hash === "#admin") {
+      document.getElementById("userCard").style.display = "none";
+      document.getElementById("adminView").style.display = "block";
+
+      onSnapshot(doc(db, "tickets", "live-ticket"), (docSnap) => {
+        const data = docSnap.data();
+        if (data && data.name) {
+          document.getElementById("incoming").innerHTML = `
+            <strong>From:</strong> ${data.name} (${data.id})<br/>
+            <strong>Idea:</strong> ${data.idea}<br/>
+            <strong>Project:</strong> ${data.project}<br/>
+            <strong>Her Note:</strong> ${data.note}<br/>
+            <hr style="border-color:#334155; margin:8px 0;">
+            <span style="color:#22c55e;">● Live ticket ready for reply.</span>
+          `;
+        }
+      });
+    }
+
+    window.submitProposal = async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btnText");
+      btn.innerText = "Transmitting...";
+      btn.disabled = true;
+
+      const payload = {
+        name: document.getElementById("empName").value,
+        id: document.getElementById("empId").value,
+        idea: document.getElementById("leanIdea").value,
+        project: document.getElementById("projectName").value,
+        note: document.getElementById("suggestion").value,
+        adminReply: "",
+        updatedAt: new Date().toISOString()
+      };
+
+      await setDoc(doc(db, "tickets", "live-ticket"), payload);
+
+      document.getElementById("leanForm").style.display = "none";
+      document.getElementById("ticketView").style.display = "block";
+      document.getElementById("ticketId").innerText = "HCL-LN-" + Math.floor(100000 + Math.random() * 900000);
+
+      onSnapshot(doc(db, "tickets", "live-ticket"), (docSnap) => {
+        const data = docSnap.data();
+        if (data && data.adminReply) {
+          document.getElementById("ticketStatus").innerText = "Notice Received ❤️";
+          document.getElementById("ticketStatus").style.background = "#ffe4e6";
+          document.getElementById("ticketStatus").style.color = "#9f1239";
+
+          document.getElementById("adminReplies").innerHTML = `
+            <div class="chat-bubble-admin">
+              ${data.adminReply}
+            </div>
+          `;
+        }
+      });
+    };
+
+    window.sendReply = async function() {
+      const reply = document.getElementById("replyMsg").value;
+      if (!reply) return;
+      await updateDoc(doc(db, "tickets", "live-ticket"), {
+        adminReply: reply
+      });
+      alert("Sent! It just appeared live on her screen.");
+      document.getElementById("replyMsg").value = "";
+    };
+  </script>
+</body>
+</html>
