@@ -9,87 +9,83 @@
     html, body {
       width: 100%;
       height: 100%;
-      overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f1f5f9;
       color: #1e293b;
+      overflow-x: hidden;
     }
 
     .desk-wrapper {
       display: flex;
       flex-direction: column;
       width: 100vw;
-      height: 100vh;
+      min-height: 100vh;
       background: #ffffff;
     }
 
-    /* Enterprise Navigation Header */
     .desk-header {
       background: #0f2d59;
       color: #ffffff;
-      padding: 14px 20px;
+      padding: 12px 16px;
       border-bottom: 3px solid #0284c7;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
     }
-    .desk-header-brand { display: flex; align-items: center; gap: 10px; }
+    .desk-header-brand { display: flex; align-items: center; gap: 8px; }
     .brand-tag {
       background: #0284c7;
       color: white;
       font-size: 11px;
       font-weight: 700;
-      padding: 3px 7px;
+      padding: 2px 6px;
       border-radius: 4px;
-      letter-spacing: 0.5px;
     }
-    .desk-title { font-size: 15px; font-weight: 600; }
+    .desk-title { font-size: 14px; font-weight: 600; }
     .status-pill {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 12px;
       background: #ecfdf5;
       color: #065f46;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
 
-    /* Sub-header meta bar */
     .ticket-meta-strip {
       background: #f8fafc;
       border-bottom: 1px solid #e2e8f0;
-      padding: 10px 20px;
-      font-size: 12px;
+      padding: 8px 16px;
+      font-size: 11px;
       color: #64748b;
       display: flex;
       justify-content: space-between;
       flex-shrink: 0;
     }
 
-    /* Main Content Area */
     .portal-body {
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 20px;
-      max-width: 900px;
+      padding: 16px;
+      max-width: 720px;
       width: 100%;
       margin: 0 auto;
-      overflow-y: auto;
+      padding-bottom: 80px; /* Ensures clearance above mobile dock & badges */
     }
 
     /* Intake Form */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 5px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
     input[type="text"], textarea {
       width: 100%;
-      padding: 10px 12px;
-      font-size: 14px;
+      padding: 9px 12px;
+      font-size: 13px;
       border: 1px solid #cbd5e1;
       border-radius: 6px;
       background: #ffffff;
@@ -97,82 +93,112 @@
       font-family: inherit;
     }
     input[type="text"]:focus, textarea:focus { outline: none; border-color: #0284c7; }
-    textarea { resize: vertical; min-height: 100px; }
+    textarea { resize: vertical; min-height: 85px; }
     .btn-submit {
       background: #0284c7;
       color: #fff;
       border: none;
       width: 100%;
       padding: 12px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
     }
     .btn-submit:hover { background: #0369a1; }
 
-    /* Realistic Enterprise Chat Room */
+    /* Enterprise Chat Screen */
     .ticket-view {
       display: none;
-      flex: 1;
       flex-direction: column;
-      height: 100%;
+      flex: 1;
     }
     .chat-timeline {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 16px;
-      flex: 1;
+      border-radius: 6px;
+      padding: 12px;
+      min-height: 240px;
+      max-height: 380px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
       margin-bottom: 12px;
     }
-    .chat-entry { display: flex; flex-direction: column; max-width: 78%; }
+    .chat-entry { display: flex; flex-direction: column; max-width: 82%; }
     .chat-entry.user { align-self: flex-end; align-items: flex-end; }
     .chat-entry.admin { align-self: flex-start; align-items: flex-start; }
 
-    .chat-sender-info { font-size: 11px; color: #64748b; margin-bottom: 3px; font-weight: 600; }
+    .chat-sender-info { font-size: 10px; color: #64748b; margin-bottom: 2px; font-weight: 600; }
     .chat-bubble {
-      padding: 10px 14px;
+      padding: 9px 12px;
       border-radius: 6px;
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.4;
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
       word-wrap: break-word;
     }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
 
-    .chat-input-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
-    .chat-input-bar input { flex: 1; padding: 11px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
+    /* Input row with high z-index so Dispatch is never hidden */
+    .chat-input-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 10;
+    }
+    .chat-input-bar input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+    }
     .chat-input-bar button {
       background: #0f2d59;
       color: white;
       border: none;
-      padding: 0 20px;
+      padding: 0 16px;
       border-radius: 6px;
       font-weight: 600;
       font-size: 13px;
       cursor: pointer;
+      white-space: nowrap;
     }
 
-    .btn-clear {
+    /* Small discreet vanish button */
+    .btn-vanish {
       width: 100%;
-      background: transparent;
+      background: #f8fafc;
       color: #64748b;
       border: 1px dashed #cbd5e1;
-      padding: 9px;
+      padding: 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 600;
       cursor: pointer;
-      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
-    .btn-clear:hover { background: #f1f5f9; color: #0f172a; }
+    .btn-vanish:hover { background: #f1f5f9; color: #334155; }
 
-    /* Admin Console View */
+    .session-ended-notice {
+      display: inline-block;
+      align-self: center;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin: 8px auto;
+    }
+
+    /* Admin View */
     #adminView { display: none; }
     .admin-header { background: #0f172a; border-bottom-color: #38bdf8; }
     .admin-timeline { background: #0b1120; border-color: #1e293b; }
@@ -187,7 +213,6 @@
       border-radius: 6px;
       font-size: 13px;
       margin-bottom: 8px;
-      flex-shrink: 0;
     }
     .admin-send-btn {
       background: #0284c7;
@@ -199,18 +224,17 @@
       border-radius: 6px;
       cursor: pointer;
       margin-bottom: 6px;
-      flex-shrink: 0;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 500px) {
       .form-grid { grid-template-columns: 1fr; }
-      .portal-body { padding: 14px; }
+      .portal-body { padding: 12px; padding-bottom: 90px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Employee Full-Screen Workspace -->
+  <!-- Employee View -->
   <div class="desk-wrapper" id="userCard">
     <header class="desk-header">
       <div class="desk-header-brand">
@@ -224,7 +248,7 @@
 
     <div class="ticket-meta-strip">
       <span>Queue: <strong>Continuous Improvement Desk</strong></span>
-      <span>SLA: <strong>Normal (Active)</strong></span>
+      <span>SLA: <strong>Active</strong></span>
     </div>
 
     <main class="portal-body">
@@ -255,32 +279,28 @@
       </form>
 
       <div id="ticketView" class="ticket-view">
-        <div class="chat-timeline" id="userChatBox">
-          <p style="font-size: 12px; color: #94a3b8; font-style: italic;">Connecting to service queue...</p>
-        </div>
+        <div class="chat-timeline" id="userChatBox"></div>
 
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
           <input type="text" id="userReplyInput" placeholder="Send follow-up message..." required />
           <button type="submit">Dispatch</button>
         </form>
 
-        <button type="button" class="btn-clear" onclick="clearAllMessages()">
-          End Support Session & Archive History
+        <button type="button" class="btn-vanish" onclick="clearAllMessages()">
+          ✓ Acknowledge & Vanish Chat History
         </button>
       </div>
     </main>
   </div>
 
-  <!-- Operator Workstation Console -->
+  <!-- Operator Workstation View -->
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
       <div class="desk-header-brand">
         <span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span>
         <span class="desk-title">Tier 2 Service Console</span>
       </div>
-      <div class="status-pill" style="background:#1e293b; color:#38bdf8;">
-        Live Console
-      </div>
+      <div class="status-pill" style="background:#1e293b; color:#38bdf8;">Live Console</div>
     </header>
 
     <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;">
@@ -292,13 +312,13 @@
       <div class="chat-timeline admin-timeline" id="adminChatBox">Waiting for employee ticket...</div>
       <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..."></textarea>
       <button class="admin-send-btn" onclick="sendAdminReply()">Transmit Reply to Employee</button>
-      <button class="btn-clear" onclick="clearAllMessages()">Clear Active Ticket Stream</button>
+      <button class="btn-vanish" onclick="clearAllMessages()">Vanish Discussion Stream</button>
     </main>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
@@ -318,27 +338,38 @@
     }
 
     window.clearAllMessages = async function() {
-      await updateDoc(ticketRef, { messages: [] });
+      await deleteDoc(ticketRef);
+      resetToForm();
     };
+
+    function resetToForm() {
+      if (window.location.hash !== "#admin") {
+        document.getElementById("ticketView").style.display = "none";
+        document.getElementById("leanForm").style.display = "block";
+        document.getElementById("leanForm").reset();
+      }
+    }
 
     if (window.location.hash === "#admin") {
       document.getElementById("userCard").style.display = "none";
       document.getElementById("adminView").style.display = "flex";
 
       onSnapshot(ticketRef, (docSnap) => {
-        const data = docSnap.data();
         const box = document.getElementById("adminChatBox");
-        if (data && data.messages && data.messages.length > 0) {
-          box.innerHTML = data.messages.map(m => `
-            <div class="chat-entry ${m.sender}">
-              <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (data.name || 'Employee')} • ${m.time}</span>
-              <div class="chat-bubble">${m.text}</div>
-            </div>
-          `).join('');
-          box.scrollTop = box.scrollHeight;
-        } else {
-          box.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.messages && data.messages.length > 0) {
+            box.innerHTML = data.messages.map(m => `
+              <div class="chat-entry ${m.sender}">
+                <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (data.name || 'Employee')} • ${m.time}</span>
+                <div class="chat-bubble">${m.text}</div>
+              </div>
+            `).join('');
+            box.scrollTop = box.scrollHeight;
+            return;
+          }
         }
+        box.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
       });
     }
 
@@ -364,6 +395,11 @@
       document.getElementById("ticketView").style.display = "flex";
 
       onSnapshot(ticketRef, (docSnap) => {
+        if (!docSnap.exists()) {
+          resetToForm();
+          return;
+        }
+
         const data = docSnap.data();
         const box = document.getElementById("userChatBox");
         if (data && data.messages && data.messages.length > 0) {
@@ -375,7 +411,8 @@
           `).join('');
           box.scrollTop = box.scrollHeight;
         } else {
-          box.innerHTML = `<p style="font-size: 12px; color: #94a3b8; font-style: italic;">Support session closed.</p>`;
+          box.innerHTML = `<div class="session-ended-notice">Session closed. Returning to portal...</div>`;
+          setTimeout(resetToForm, 1500);
         }
       });
     }
@@ -388,9 +425,11 @@
       input.value = "";
 
       const snap = await getDoc(ticketRef);
-      const list = snap.exists() ? (snap.data().messages || []) : [];
-      list.push({ sender: 'user', text: text, time: getTime() });
-      await updateDoc(ticketRef, { messages: list });
+      if (snap.exists()) {
+        const list = snap.data().messages || [];
+        list.push({ sender: 'user', text: text, time: getTime() });
+        await updateDoc(ticketRef, { messages: list });
+      }
     };
 
     window.sendAdminReply = async function() {
@@ -400,14 +439,20 @@
       input.value = "";
 
       const snap = await getDoc(ticketRef);
-      const list = snap.exists() ? (snap.data().messages || []) : [];
-      list.push({ sender: 'admin', text: text, time: getTime() });
-      await updateDoc(ticketRef, { messages: list });
+      if (snap.exists()) {
+        const list = snap.data().messages || [];
+        list.push({ sender: 'admin', text: text, time: getTime() });
+        await updateDoc(ticketRef, { messages: list });
+      }
     };
 
     onSnapshot(ticketRef, (docSnap) => {
-      if (window.location.hash !== "#admin" && docSnap.exists() && docSnap.data().messages) {
-        activateChat();
+      if (window.location.hash !== "#admin") {
+        if (docSnap.exists() && docSnap.data().messages && docSnap.data().messages.length > 0) {
+          activateChat();
+        } else {
+          resetToForm();
+        }
       }
     });
   </script>
