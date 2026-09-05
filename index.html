@@ -130,6 +130,7 @@
     .chat-entry { display: flex; flex-direction: column; max-width: 82%; }
     .chat-entry.user { align-self: flex-end; align-items: flex-end; }
     .chat-entry.admin { align-self: flex-start; align-items: flex-start; }
+    .chat-entry.system { align-self: flex-start; align-items: flex-start; }
 
     .chat-sender-info { font-size: 10px; color: #64748b; margin-bottom: 2px; font-weight: 600; }
     .chat-bubble {
@@ -142,6 +143,7 @@
     }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
+    .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
 
     /* Typing indicator */
     .typing-notice {
@@ -201,6 +203,7 @@
     .admin-header { background: #0f172a; border-bottom-color: #38bdf8; }
     .admin-timeline { background: #0b1120; border-color: #1e293b; }
     .admin-timeline .admin .chat-bubble { background: #1e293b; color: #f8fafc; border-color: #334155; }
+    .admin-timeline .system .chat-bubble { background: #162238; color: #94a3b8; border-color: #0284c7; }
     .admin-timeline .user .chat-bubble { background: #0284c7; color: #ffffff; }
     .admin-textbox {
       background: #ffffff;
@@ -263,7 +266,7 @@
 </head>
 <body>
 
-  <!-- Innocent Camouflage Panic Screen -->
+  <!-- Camouflage Panic Screen -->
   <div id="panicScreen">
     <div class="doc-nav">Confluence / Internal Engineering Wiki / Architecture Standards / CI Workflow</div>
     <h1 class="doc-title">Engineering Operating Procedures (SOP-8402)</h1>
@@ -389,7 +392,7 @@
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    /* 1. Camouflage / Panic Hotkey Logic (Double-tap ESC or double-tap header) */
+    /* Camouflage Hotkey Logic */
     let lastEscTime = 0;
     let panicActive = false;
 
@@ -428,7 +431,7 @@
     document.getElementById("userLogoBrand").addEventListener("dblclick", togglePanic);
     document.getElementById("panicScreen").addEventListener("dblclick", togglePanic);
 
-    /* 2. Automatic Tab Title Disguise when clicking outside */
+    /* Automatic Tab Disguise */
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         document.title = "HCLTech Intranet | Confluence";
@@ -437,7 +440,7 @@
       }
     });
 
-    /* 3. 30-Minute Expiration Verification */
+    /* 30-Minute Expiration Verification */
     async function checkExpiration(data) {
       if (!data || !data.createdAt) return false;
       if (Date.now() - data.createdAt >= TTL_MS) {
@@ -464,7 +467,7 @@
       }
     }
 
-    /* 4. Typing Handlers */
+    /* Typing Handlers */
     window.handleUserTyping = async function() {
       clearTimeout(typingTimeout);
       await updateDoc(ticketRef, { userTyping: true });
@@ -485,7 +488,13 @@
       document.getElementById("adminReplyMsg").value = text;
     };
 
-    /* 5. View Routing */
+    function renderSenderLabel(sender, empName) {
+      if (sender === 'admin') return 'Desk Review Agent';
+      if (sender === 'system') return 'System Bot / Routing';
+      return empName || 'You';
+    }
+
+    /* View Routing */
     if (window.location.hash === "#admin") {
       document.getElementById("userCard").style.display = "none";
       document.getElementById("adminView").style.display = "flex";
@@ -503,7 +512,7 @@
           if (data.messages && data.messages.length > 0) {
             box.innerHTML = data.messages.map(m => `
               <div class="chat-entry ${m.sender}">
-                <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (data.name || 'Employee')} • ${m.time}</span>
+                <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
                 <div class="chat-bubble">${m.text}</div>
               </div>
             `).join('');
@@ -516,20 +525,28 @@
       });
     }
 
+    // Submit Proposal with Automated System Greeting
     window.submitProposal = async function(e) {
       e.preventDefault();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
+      const empName = document.getElementById("empName").value;
 
       await setDoc(ticketRef, {
-        name: document.getElementById("empName").value,
+        name: empName,
         id: document.getElementById("empId").value,
         idea: initialIdea,
         createdAt: Date.now(),
         userTyping: false,
         adminTyping: false,
+        autoGreeted: true,
         messages: [
-          { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() }
+          { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() },
+          { 
+            sender: 'system', 
+            text: `Thank you for contacting the HCLTech Continuous Improvement Desk. An authorized desk reviewer has been assigned to your ticket. Please stand by while your inquiry is reviewed.`, 
+            time: getTime() 
+          }
         ]
       });
 
@@ -557,7 +574,7 @@
         if (data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
             <div class="chat-entry ${m.sender}">
-              <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Review Agent' : 'You'} • ${m.time}</span>
+              <span class="chat-sender-info">${renderSenderLabel(m.sender, data.name)} • ${m.time}</span>
               <div class="chat-bubble">${m.text}</div>
             </div>
           `).join('');
@@ -580,7 +597,18 @@
 
         const list = data.messages || [];
         list.push({ sender: 'user', text: text, time: getTime() });
-        await updateDoc(ticketRef, { messages: list, userTyping: false });
+
+        // If for any reason greeting was not sent yet, send it automatically
+        if (!data.autoGreeted) {
+          list.push({
+            sender: 'system',
+            text: `Thank you for reaching out. A reviewer has been assigned to this ticket. Please stand by.`,
+            time: getTime()
+          });
+          await updateDoc(ticketRef, { messages: list, userTyping: false, autoGreeted: true });
+        } else {
+          await updateDoc(ticketRef, { messages: list, userTyping: false });
+        }
       }
     };
 
