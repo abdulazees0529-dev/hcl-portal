@@ -75,7 +75,7 @@
       max-width: 720px;
       width: 100%;
       margin: 0 auto;
-      padding-bottom: 80px; /* Ensures clearance above mobile dock & badges */
+      padding-bottom: 80px;
     }
 
     /* Intake Form */
@@ -142,7 +142,6 @@
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
 
-    /* Input row with high z-index so Dispatch is never hidden */
     .chat-input-bar {
       display: flex;
       gap: 6px;
@@ -169,7 +168,6 @@
       white-space: nowrap;
     }
 
-    /* Small discreet vanish button */
     .btn-vanish {
       width: 100%;
       background: #f8fafc;
@@ -248,7 +246,7 @@
 
     <div class="ticket-meta-strip">
       <span>Queue: <strong>Continuous Improvement Desk</strong></span>
-      <span>SLA: <strong>Active</strong></span>
+      <span>SLA: <strong>Auto-Purge (30m)</strong></span>
     </div>
 
     <main class="portal-body">
@@ -293,7 +291,7 @@
     </main>
   </div>
 
-  <!-- Operator Workstation View -->
+  <!-- Operator Console View -->
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
       <div class="desk-header-brand">
@@ -305,7 +303,7 @@
 
     <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;">
       <span>Workspace: <strong>Enterprise Service Management Desk</strong></span>
-      <span>Session: <strong>Encrypted</strong></span>
+      <span>Policy: <strong>30-Minute Auto-Purge Active</strong></span>
     </div>
 
     <main class="portal-body">
@@ -332,13 +330,28 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const ticketRef = doc(db, "tickets", "live-ticket");
+    const TTL_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
 
     function getTime() {
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    async function checkExpiration(data) {
+      if (!data || !data.createdAt) return false;
+      const now = Date.now();
+      if (now - data.createdAt >= TTL_MS) {
+        await clearAllMessages();
+        return true;
+      }
+      return false;
+    }
+
     window.clearAllMessages = async function() {
-      await deleteDoc(ticketRef);
+      try {
+        await deleteDoc(ticketRef);
+      } catch (err) {
+        console.error(err);
+      }
       resetToForm();
     };
 
@@ -354,10 +367,12 @@
       document.getElementById("userCard").style.display = "none";
       document.getElementById("adminView").style.display = "flex";
 
-      onSnapshot(ticketRef, (docSnap) => {
+      onSnapshot(ticketRef, async (docSnap) => {
         const box = document.getElementById("adminChatBox");
         if (docSnap.exists()) {
           const data = docSnap.data();
+          if (await checkExpiration(data)) return;
+
           if (data.messages && data.messages.length > 0) {
             box.innerHTML = data.messages.map(m => `
               <div class="chat-entry ${m.sender}">
@@ -382,6 +397,7 @@
         name: document.getElementById("empName").value,
         id: document.getElementById("empId").value,
         idea: initialIdea,
+        createdAt: Date.now(),
         messages: [
           { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() }
         ]
@@ -394,13 +410,15 @@
       document.getElementById("leanForm").style.display = "none";
       document.getElementById("ticketView").style.display = "flex";
 
-      onSnapshot(ticketRef, (docSnap) => {
+      onSnapshot(ticketRef, async (docSnap) => {
         if (!docSnap.exists()) {
           resetToForm();
           return;
         }
 
         const data = docSnap.data();
+        if (await checkExpiration(data)) return;
+
         const box = document.getElementById("userChatBox");
         if (data && data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
@@ -411,8 +429,8 @@
           `).join('');
           box.scrollTop = box.scrollHeight;
         } else {
-          box.innerHTML = `<div class="session-ended-notice">Session closed. Returning to portal...</div>`;
-          setTimeout(resetToForm, 1500);
+          box.innerHTML = `<div class="session-ended-notice">Session expired or closed.</div>`;
+          setTimeout(resetToForm, 1200);
         }
       });
     }
@@ -426,7 +444,10 @@
 
       const snap = await getDoc(ticketRef);
       if (snap.exists()) {
-        const list = snap.data().messages || [];
+        const data = snap.data();
+        if (await checkExpiration(data)) return;
+
+        const list = data.messages || [];
         list.push({ sender: 'user', text: text, time: getTime() });
         await updateDoc(ticketRef, { messages: list });
       }
@@ -440,19 +461,35 @@
 
       const snap = await getDoc(ticketRef);
       if (snap.exists()) {
-        const list = snap.data().messages || [];
+        const data = snap.data();
+        if (await checkExpiration(data)) return;
+
+        const list = data.messages || [];
         list.push({ sender: 'admin', text: text, time: getTime() });
         await updateDoc(ticketRef, { messages: list });
       }
     };
 
-    onSnapshot(ticketRef, (docSnap) => {
+    // Periodic sweep every 30 seconds to catch expiration even if no messages are sent
+    setInterval(async () => {
+      const snap = await getDoc(ticketRef);
+      if (snap.exists()) {
+        await checkExpiration(snap.data());
+      }
+    }, 30000);
+
+    onSnapshot(ticketRef, async (docSnap) => {
       if (window.location.hash !== "#admin") {
-        if (docSnap.exists() && docSnap.data().messages && docSnap.data().messages.length > 0) {
-          activateChat();
-        } else {
-          resetToForm();
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (await checkExpiration(data)) return;
+
+          if (data.messages && data.messages.length > 0) {
+            activateChat();
+            return;
+          }
         }
+        resetToForm();
       }
     });
   </script>
