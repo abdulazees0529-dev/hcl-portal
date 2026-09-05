@@ -39,22 +39,21 @@
     }
     .btn-submit:hover { background: #034473; }
     .ticket-view { display: none; }
+    .ticket-header-row {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+    }
     .status-badge {
-      display: inline-block; padding: 6px 12px; font-size: 13px;
+      display: inline-block; padding: 6px 12px; font-size: 12px;
       font-weight: 700; border-radius: 20px; background: #e0f2fe; color: #0369a1;
-      margin-bottom: 12px;
     }
     .chat-box {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 14px; min-height: 120px; max-height: 320px; overflow-y: auto; margin-bottom: 14px;
+      padding: 14px; min-height: 140px; max-height: 320px; overflow-y: auto; margin-bottom: 14px;
       display: flex; flex-direction: column; gap: 10px;
     }
     .chat-bubble {
       padding: 10px 14px; border-radius: 8px; font-size: 14px; line-height: 1.4; max-width: 85%;
-      word-wrap: break-word; transition: opacity 1.5s ease, transform 1.5s ease; opacity: 1;
-    }
-    .chat-bubble.vanishing {
-      opacity: 0; transform: translateY(-6px);
+      word-wrap: break-word; transition: opacity 0.5s ease;
     }
     .admin-bubble {
       background: #0f172a; color: white; align-self: flex-start;
@@ -64,26 +63,30 @@
       background: #005691; color: white; align-self: flex-end;
       border-bottom-right-radius: 2px;
     }
-    .vanish-timer {
-      display: block; font-size: 10px; color: #94a3b8; margin-top: 4px; text-align: right;
-    }
-    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
     .chat-input-row input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
     .chat-input-row button {
       background: #005691; color: white; border: none; padding: 0 16px;
       border-radius: 6px; font-weight: 600; cursor: pointer;
     }
+    .btn-clear {
+      width: 100%; background: #f1f5f9; color: #475569; border: 1px dashed #cbd5e1;
+      padding: 9px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-clear:hover { background: #e2e8f0; color: #1e293b; }
 
     /* Admin View */
     #adminView { display: none; }
     .admin-card { background: #1e293b; color: #f8fafc; padding: 22px; border-radius: 12px; }
     .admin-box {
       background: #0f172a; padding: 14px; border-radius: 8px; margin-bottom: 16px;
-      max-height: 300px; overflow-y: auto; border: 1px solid #334155;
+      min-height: 140px; max-height: 300px; overflow-y: auto; border: 1px solid #334155;
       display: flex; flex-direction: column; gap: 10px;
     }
     .admin-textarea { background: #0f172a; color: white; border: 1px solid #475569; width: 100%; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
-    .admin-btn { background: #38bdf8; color: #0f172a; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; }
+    .admin-btn { background: #38bdf8; color: #0f172a; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; margin-bottom: 8px; }
+    .admin-clear-btn { background: #334155; color: #cbd5e1; border: none; width: 100%; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
     @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -126,8 +129,10 @@
       </form>
 
       <div id="ticketView" class="ticket-view">
-        <span class="status-badge" id="ticketStatus">Status: Under Active Desk Review</span>
-        <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Ticket Reference: <strong>HCL-LN-962234</strong></p>
+        <div class="ticket-header-row">
+          <span class="status-badge" id="ticketStatus">Status: Under Desk Review</span>
+          <span style="font-size: 12px; color: #64748b;">Ref: <strong>HCL-LN-962234</strong></span>
+        </div>
         
         <div class="chat-box" id="userChatBox">
           <p style="font-size: 12px; color: #94a3b8; font-style: italic;">Awaiting desk evaluation...</p>
@@ -137,6 +142,10 @@
           <input type="text" id="userReplyInput" placeholder="Type a response to the reviewer..." required />
           <button type="submit">Send</button>
         </form>
+
+        <button type="button" class="btn-clear" onclick="clearAllMessages()">
+          ✓ Acknowledge & Clear Discussion History
+        </button>
       </div>
     </div>
   </div>
@@ -147,6 +156,7 @@
     <div class="admin-box" id="adminChatBox">Waiting for messages...</div>
     <textarea class="admin-textarea" id="adminReplyMsg" rows="2" placeholder="Type reply to send to her screen..."></textarea>
     <button class="admin-btn" onclick="sendAdminReply()">Push Reply to Her Screen</button>
+    <button class="admin-clear-btn" onclick="clearAllMessages()">Clear Discussion History</button>
   </div>
 
   <script type="module">
@@ -165,31 +175,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const ticketRef = doc(db, "tickets", "live-ticket");
-    const activeTimers = new Set();
 
-    async function deleteMessageById(msgId) {
-      const snap = await getDoc(ticketRef);
-      if (!snap.exists()) return;
-      const currentList = snap.data().messages || [];
-      const updatedList = currentList.filter(m => m.id !== msgId);
-      await updateDoc(ticketRef, { messages: updatedList });
-    }
-
-    function triggerVanishCountdown(msgId) {
-      if (activeTimers.has(msgId)) return;
-      activeTimers.add(msgId);
-
-      // Start fade-out at 5.5s
-      setTimeout(() => {
-        const el = document.getElementById(`bubble-${msgId}`);
-        if (el) el.classList.add('vanishing');
-      }, 5500);
-
-      // Remove permanently from database at 7s
-      setTimeout(() => {
-        deleteMessageById(msgId);
-      }, 7000);
-    }
+    // Global clear function accessible by both views
+    window.clearAllMessages = async function() {
+      await updateDoc(ticketRef, { messages: [] });
+    };
 
     if (window.location.hash === "#admin") {
       document.getElementById("userCard").style.display = "none";
@@ -200,14 +190,13 @@
         const box = document.getElementById("adminChatBox");
         if (data && data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
-            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}" id="bubble-${m.id}">
+            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}">
               <strong>${m.sender === 'admin' ? 'You' : 'Her'}:</strong> ${m.text}
-              <span class="vanish-timer">Expires shortly</span>
             </div>
           `).join('');
           box.scrollTop = box.scrollHeight;
         } else {
-          box.innerHTML = `<span style="color:#64748b; font-style:italic;">No active messages.</span>`;
+          box.innerHTML = `<span style="color:#64748b; font-style:italic;">No active messages in session.</span>`;
         }
       });
     }
@@ -216,14 +205,13 @@
       e.preventDefault();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
-      const initialId = "msg-" + Date.now();
 
       await setDoc(ticketRef, {
         name: document.getElementById("empName").value,
         id: document.getElementById("empId").value,
         idea: initialIdea,
         messages: [
-          { id: initialId, sender: 'user', text: `Proposal: ${initialIdea} - ${initialText}` }
+          { sender: 'user', text: `Proposal: ${initialIdea} - ${initialText}` }
         ]
       });
 
@@ -239,18 +227,13 @@
         const box = document.getElementById("userChatBox");
         if (data && data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
-            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}" id="bubble-${m.id}">
+            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}">
               ${m.text}
-              <span class="vanish-timer">Expiring in 7s...</span>
             </div>
           `).join('');
           box.scrollTop = box.scrollHeight;
-
-          data.messages.forEach(m => {
-            triggerVanishCountdown(m.id);
-          });
         } else {
-          box.innerHTML = `<p style="font-size: 12px; color: #94a3b8; font-style: italic;">All messages reviewed and cleared.</p>`;
+          box.innerHTML = `<p style="font-size: 12px; color: #94a3b8; font-style: italic;">All notes have been cleared.</p>`;
         }
       });
     }
@@ -264,7 +247,7 @@
 
       const snap = await getDoc(ticketRef);
       const list = snap.exists() ? (snap.data().messages || []) : [];
-      list.push({ id: "msg-" + Date.now(), sender: 'user', text: text });
+      list.push({ sender: 'user', text: text });
       await updateDoc(ticketRef, { messages: list });
     };
 
@@ -276,7 +259,7 @@
 
       const snap = await getDoc(ticketRef);
       const list = snap.exists() ? (snap.data().messages || []) : [];
-      list.push({ id: "msg-" + Date.now(), sender: 'admin', text: text });
+      list.push({ sender: 'admin', text: text });
       await updateDoc(ticketRef, { messages: list });
     };
 
