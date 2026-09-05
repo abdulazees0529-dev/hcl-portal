@@ -32,8 +32,9 @@
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
+      user-select: none;
     }
-    .desk-header-brand { display: flex; align-items: center; gap: 8px; }
+    .desk-header-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; }
     .brand-tag {
       background: #0284c7;
       color: white;
@@ -124,7 +125,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
     .chat-entry { display: flex; flex-direction: column; max-width: 82%; }
     .chat-entry.user { align-self: flex-end; align-items: flex-end; }
@@ -141,6 +142,16 @@
     }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
+
+    /* Typing indicator */
+    .typing-notice {
+      font-size: 11px;
+      color: #0284c7;
+      font-style: italic;
+      min-height: 16px;
+      margin-bottom: 6px;
+      display: none;
+    }
 
     .chat-input-bar {
       display: flex;
@@ -185,18 +196,7 @@
     }
     .btn-vanish:hover { background: #f1f5f9; color: #334155; }
 
-    .session-ended-notice {
-      display: inline-block;
-      align-self: center;
-      background: #e2e8f0;
-      color: #475569;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 12px;
-      margin: 8px auto;
-    }
-
-    /* Admin View */
+    /* Admin View Elements */
     #adminView { display: none; }
     .admin-header { background: #0f172a; border-bottom-color: #38bdf8; }
     .admin-timeline { background: #0b1120; border-color: #1e293b; }
@@ -212,6 +212,22 @@
       font-size: 13px;
       margin-bottom: 8px;
     }
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .quick-chip {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .quick-chip:hover { color: #f8fafc; border-color: #38bdf8; }
     .admin-send-btn {
       background: #0284c7;
       color: white;
@@ -224,6 +240,21 @@
       margin-bottom: 6px;
     }
 
+    /* Camouflage / Panic Screen */
+    #panicScreen {
+      display: none;
+      background: #ffffff;
+      color: #1e293b;
+      padding: 30px;
+      height: 100vh;
+      width: 100vw;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .doc-nav { font-size: 12px; color: #64748b; margin-bottom: 20px; }
+    .doc-title { font-size: 22px; font-weight: 700; color: #0f2d59; margin-bottom: 12px; }
+    .doc-body p { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: #334155; }
+
     @media (max-width: 500px) {
       .form-grid { grid-template-columns: 1fr; }
       .portal-body { padding: 12px; padding-bottom: 90px; }
@@ -232,10 +263,21 @@
 </head>
 <body>
 
-  <!-- Employee View -->
+  <!-- Innocent Camouflage Panic Screen -->
+  <div id="panicScreen">
+    <div class="doc-nav">Confluence / Internal Engineering Wiki / Architecture Standards / CI Workflow</div>
+    <h1 class="doc-title">Engineering Operating Procedures (SOP-8402)</h1>
+    <div class="doc-body">
+      <p><strong>Overview:</strong> This internal guidance document describes the operational delivery processes under the Agile Transformation Framework. All team components must align continuous improvement tickets with quarterly KPI mandates.</p>
+      <p><strong>Compliance Matrix:</strong> Ensure that all service requests and operational friction logs include accurate employee IDs and account tags. Unverified submissions will default to the standard Tier 1 queue.</p>
+      <p><em>Press [ESC twice] or tap title to return to your workspace.</em></p>
+    </div>
+  </div>
+
+  <!-- Standard Employee View -->
   <div class="desk-wrapper" id="userCard">
-    <header class="desk-header">
-      <div class="desk-header-brand">
+    <header class="desk-header" id="userHeader">
+      <div class="desk-header-brand" id="userLogoBrand">
         <span class="brand-tag">HCLTech</span>
         <span class="desk-title">Service Desk Portal</span>
       </div>
@@ -278,9 +320,10 @@
 
       <div id="ticketView" class="ticket-view">
         <div class="chat-timeline" id="userChatBox"></div>
+        <div class="typing-notice" id="userTypingNotice">Desk operator is typing...</div>
 
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
-          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." required />
+          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." required oninput="handleUserTyping()" />
           <button type="submit">Dispatch</button>
         </form>
 
@@ -291,7 +334,7 @@
     </main>
   </div>
 
-  <!-- Operator Console View -->
+  <!-- Operator Workstation View -->
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
       <div class="desk-header-brand">
@@ -308,7 +351,15 @@
 
     <main class="portal-body">
       <div class="chat-timeline admin-timeline" id="adminChatBox">Waiting for employee ticket...</div>
-      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..."></textarea>
+      <div class="typing-notice" id="adminTypingNotice" style="color:#38bdf8;">Employee is typing...</div>
+
+      <div class="quick-replies">
+        <span class="quick-chip" onclick="setQuickReply('Desk Lead evaluating. Stand by.')">Evaluating</span>
+        <span class="quick-chip" onclick="setQuickReply('Logged for internal CI sprint.')">Logged</span>
+        <span class="quick-chip" onclick="setQuickReply('Acknowledge. Notes are noted.')">Noted</span>
+      </div>
+
+      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..." oninput="handleAdminTyping()"></textarea>
       <button class="admin-send-btn" onclick="sendAdminReply()">Transmit Reply to Employee</button>
       <button class="btn-vanish" onclick="clearAllMessages()">Vanish Discussion Stream</button>
     </main>
@@ -330,16 +381,66 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const ticketRef = doc(db, "tickets", "live-ticket");
-    const TTL_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const TTL_MS = 30 * 60 * 1000;
+
+    let typingTimeout = null;
 
     function getTime() {
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    /* 1. Camouflage / Panic Hotkey Logic (Double-tap ESC or double-tap header) */
+    let lastEscTime = 0;
+    let panicActive = false;
+
+    function togglePanic() {
+      panicActive = !panicActive;
+      const panicEl = document.getElementById("panicScreen");
+      const userCard = document.getElementById("userCard");
+      const adminView = document.getElementById("adminView");
+
+      if (panicActive) {
+        panicEl.style.display = "block";
+        userCard.style.display = "none";
+        adminView.style.display = "none";
+        document.title = "HCLTech Internal Wiki | SOP-8402";
+      } else {
+        panicEl.style.display = "none";
+        if (window.location.hash === "#admin") {
+          adminView.style.display = "flex";
+        } else {
+          userCard.style.display = "flex";
+        }
+        document.title = "HCLTech Enterprise Service Management";
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const now = Date.now();
+        if (now - lastEscTime < 400) {
+          togglePanic();
+        }
+        lastEscTime = now;
+      }
+    });
+
+    document.getElementById("userLogoBrand").addEventListener("dblclick", togglePanic);
+    document.getElementById("panicScreen").addEventListener("dblclick", togglePanic);
+
+    /* 2. Automatic Tab Title Disguise when clicking outside */
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        document.title = "HCLTech Intranet | Confluence";
+      } else if (!panicActive) {
+        document.title = "HCLTech Enterprise Service Management";
+      }
+    });
+
+    /* 3. 30-Minute Expiration Verification */
     async function checkExpiration(data) {
       if (!data || !data.createdAt) return false;
-      const now = Date.now();
-      if (now - data.createdAt >= TTL_MS) {
+      if (Date.now() - data.createdAt >= TTL_MS) {
         await clearAllMessages();
         return true;
       }
@@ -363,15 +464,41 @@
       }
     }
 
+    /* 4. Typing Handlers */
+    window.handleUserTyping = async function() {
+      clearTimeout(typingTimeout);
+      await updateDoc(ticketRef, { userTyping: true });
+      typingTimeout = setTimeout(async () => {
+        await updateDoc(ticketRef, { userTyping: false });
+      }, 1500);
+    };
+
+    window.handleAdminTyping = async function() {
+      clearTimeout(typingTimeout);
+      await updateDoc(ticketRef, { adminTyping: true });
+      typingTimeout = setTimeout(async () => {
+        await updateDoc(ticketRef, { adminTyping: false });
+      }, 1500);
+    };
+
+    window.setQuickReply = function(text) {
+      document.getElementById("adminReplyMsg").value = text;
+    };
+
+    /* 5. View Routing */
     if (window.location.hash === "#admin") {
       document.getElementById("userCard").style.display = "none";
       document.getElementById("adminView").style.display = "flex";
 
       onSnapshot(ticketRef, async (docSnap) => {
         const box = document.getElementById("adminChatBox");
+        const typingEl = document.getElementById("adminTypingNotice");
+
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (await checkExpiration(data)) return;
+
+          typingEl.style.display = data.userTyping ? "block" : "none";
 
           if (data.messages && data.messages.length > 0) {
             box.innerHTML = data.messages.map(m => `
@@ -385,6 +512,7 @@
           }
         }
         box.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
+        typingEl.style.display = "none";
       });
     }
 
@@ -398,6 +526,8 @@
         id: document.getElementById("empId").value,
         idea: initialIdea,
         createdAt: Date.now(),
+        userTyping: false,
+        adminTyping: false,
         messages: [
           { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() }
         ]
@@ -420,7 +550,11 @@
         if (await checkExpiration(data)) return;
 
         const box = document.getElementById("userChatBox");
-        if (data && data.messages && data.messages.length > 0) {
+        const typingEl = document.getElementById("userTypingNotice");
+
+        typingEl.style.display = data.adminTyping ? "block" : "none";
+
+        if (data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
             <div class="chat-entry ${m.sender}">
               <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Review Agent' : 'You'} • ${m.time}</span>
@@ -428,9 +562,6 @@
             </div>
           `).join('');
           box.scrollTop = box.scrollHeight;
-        } else {
-          box.innerHTML = `<div class="session-ended-notice">Session expired or closed.</div>`;
-          setTimeout(resetToForm, 1200);
         }
       });
     }
@@ -449,7 +580,7 @@
 
         const list = data.messages || [];
         list.push({ sender: 'user', text: text, time: getTime() });
-        await updateDoc(ticketRef, { messages: list });
+        await updateDoc(ticketRef, { messages: list, userTyping: false });
       }
     };
 
@@ -466,11 +597,10 @@
 
         const list = data.messages || [];
         list.push({ sender: 'admin', text: text, time: getTime() });
-        await updateDoc(ticketRef, { messages: list });
+        await updateDoc(ticketRef, { messages: list, adminTyping: false });
       }
     };
 
-    // Periodic sweep every 30 seconds to catch expiration even if no messages are sent
     setInterval(async () => {
       const snap = await getDoc(ticketRef);
       if (snap.exists()) {
