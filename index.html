@@ -46,12 +46,15 @@
     }
     .chat-box {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-      padding: 14px; max-height: 300px; overflow-y: auto; margin-bottom: 14px;
-      display: flex; flex-direction: column; gap: 8px;
+      padding: 14px; min-height: 120px; max-height: 320px; overflow-y: auto; margin-bottom: 14px;
+      display: flex; flex-direction: column; gap: 10px;
     }
     .chat-bubble {
       padding: 10px 14px; border-radius: 8px; font-size: 14px; line-height: 1.4; max-width: 85%;
-      word-wrap: break-word;
+      word-wrap: break-word; transition: opacity 1.5s ease, transform 1.5s ease; opacity: 1;
+    }
+    .chat-bubble.vanishing {
+      opacity: 0; transform: translateY(-6px);
     }
     .admin-bubble {
       background: #0f172a; color: white; align-self: flex-start;
@@ -60,6 +63,9 @@
     .user-bubble {
       background: #005691; color: white; align-self: flex-end;
       border-bottom-right-radius: 2px;
+    }
+    .vanish-timer {
+      display: block; font-size: 10px; color: #94a3b8; margin-top: 4px; text-align: right;
     }
     .chat-input-row { display: flex; gap: 8px; }
     .chat-input-row input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
@@ -74,7 +80,7 @@
     .admin-box {
       background: #0f172a; padding: 14px; border-radius: 8px; margin-bottom: 16px;
       max-height: 300px; overflow-y: auto; border: 1px solid #334155;
-      display: flex; flex-direction: column; gap: 8px;
+      display: flex; flex-direction: column; gap: 10px;
     }
     .admin-textarea { background: #0f172a; color: white; border: 1px solid #475569; width: 100%; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
     .admin-btn { background: #38bdf8; color: #0f172a; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; }
@@ -83,7 +89,7 @@
 </head>
 <body>
 
-  <!-- 1. Her View -->
+  <!-- 1. User View -->
   <div class="portal-card" id="userCard">
     <div class="portal-header">
       <div class="header-text">
@@ -123,7 +129,9 @@
         <span class="status-badge" id="ticketStatus">Status: Under Active Desk Review</span>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Ticket Reference: <strong>HCL-LN-962234</strong></p>
         
-        <div class="chat-box" id="userChatBox"></div>
+        <div class="chat-box" id="userChatBox">
+          <p style="font-size: 12px; color: #94a3b8; font-style: italic;">Awaiting desk evaluation...</p>
+        </div>
 
         <form class="chat-input-row" onsubmit="sendUserReply(event)">
           <input type="text" id="userReplyInput" placeholder="Type a response to the reviewer..." required />
@@ -133,17 +141,17 @@
     </div>
   </div>
 
-  <!-- 2. Your Admin View -->
+  <!-- 2. Admin View -->
   <div class="portal-card admin-card" id="adminView">
     <h2 style="color: #38bdf8; margin-bottom: 12px; font-size: 18px;">Control Operator (You)</h2>
-    <div class="admin-box" id="adminChatBox"></div>
+    <div class="admin-box" id="adminChatBox">Waiting for messages...</div>
     <textarea class="admin-textarea" id="adminReplyMsg" rows="2" placeholder="Type reply to send to her screen..."></textarea>
     <button class="admin-btn" onclick="sendAdminReply()">Push Reply to Her Screen</button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
@@ -157,6 +165,31 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const ticketRef = doc(db, "tickets", "live-ticket");
+    const activeTimers = new Set();
+
+    async function deleteMessageById(msgId) {
+      const snap = await getDoc(ticketRef);
+      if (!snap.exists()) return;
+      const currentList = snap.data().messages || [];
+      const updatedList = currentList.filter(m => m.id !== msgId);
+      await updateDoc(ticketRef, { messages: updatedList });
+    }
+
+    function triggerVanishCountdown(msgId) {
+      if (activeTimers.has(msgId)) return;
+      activeTimers.add(msgId);
+
+      // Start fade-out at 5.5s
+      setTimeout(() => {
+        const el = document.getElementById(`bubble-${msgId}`);
+        if (el) el.classList.add('vanishing');
+      }, 5500);
+
+      // Remove permanently from database at 7s
+      setTimeout(() => {
+        deleteMessageById(msgId);
+      }, 7000);
+    }
 
     if (window.location.hash === "#admin") {
       document.getElementById("userCard").style.display = "none";
@@ -164,14 +197,17 @@
 
       onSnapshot(ticketRef, (docSnap) => {
         const data = docSnap.data();
-        if (data && data.messages) {
-          const box = document.getElementById("adminChatBox");
+        const box = document.getElementById("adminChatBox");
+        if (data && data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
-            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}">
+            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}" id="bubble-${m.id}">
               <strong>${m.sender === 'admin' ? 'You' : 'Her'}:</strong> ${m.text}
+              <span class="vanish-timer">Expires shortly</span>
             </div>
           `).join('');
           box.scrollTop = box.scrollHeight;
+        } else {
+          box.innerHTML = `<span style="color:#64748b; font-style:italic;">No active messages.</span>`;
         }
       });
     }
@@ -180,13 +216,14 @@
       e.preventDefault();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
+      const initialId = "msg-" + Date.now();
 
       await setDoc(ticketRef, {
         name: document.getElementById("empName").value,
         id: document.getElementById("empId").value,
         idea: initialIdea,
         messages: [
-          { sender: 'user', text: `Proposal: ${initialIdea} - ${initialText}` }
+          { id: initialId, sender: 'user', text: `Proposal: ${initialIdea} - ${initialText}` }
         ]
       });
 
@@ -199,14 +236,21 @@
 
       onSnapshot(ticketRef, (docSnap) => {
         const data = docSnap.data();
-        if (data && data.messages) {
-          const box = document.getElementById("userChatBox");
+        const box = document.getElementById("userChatBox");
+        if (data && data.messages && data.messages.length > 0) {
           box.innerHTML = data.messages.map(m => `
-            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}">
+            <div class="chat-bubble ${m.sender === 'admin' ? 'admin-bubble' : 'user-bubble'}" id="bubble-${m.id}">
               ${m.text}
+              <span class="vanish-timer">Expiring in 7s...</span>
             </div>
           `).join('');
           box.scrollTop = box.scrollHeight;
+
+          data.messages.forEach(m => {
+            triggerVanishCountdown(m.id);
+          });
+        } else {
+          box.innerHTML = `<p style="font-size: 12px; color: #94a3b8; font-style: italic;">All messages reviewed and cleared.</p>`;
         }
       });
     }
@@ -218,9 +262,10 @@
       if (!text) return;
       input.value = "";
 
-      await updateDoc(ticketRef, {
-        messages: arrayUnion({ sender: 'user', text: text })
-      });
+      const snap = await getDoc(ticketRef);
+      const list = snap.exists() ? (snap.data().messages || []) : [];
+      list.push({ id: "msg-" + Date.now(), sender: 'user', text: text });
+      await updateDoc(ticketRef, { messages: list });
     };
 
     window.sendAdminReply = async function() {
@@ -229,9 +274,10 @@
       if (!text) return;
       input.value = "";
 
-      await updateDoc(ticketRef, {
-        messages: arrayUnion({ sender: 'admin', text: text })
-      });
+      const snap = await getDoc(ticketRef);
+      const list = snap.exists() ? (snap.data().messages || []) : [];
+      list.push({ id: "msg-" + Date.now(), sender: 'admin', text: text });
+      await updateDoc(ticketRef, { messages: list });
     };
 
     onSnapshot(ticketRef, (docSnap) => {
