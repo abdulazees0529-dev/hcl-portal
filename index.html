@@ -109,7 +109,7 @@
         <div class="chat-timeline" id="userChatBox"></div>
         <div class="typing-notice" id="userTypingNotice">Desk operator is typing...</div>
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
-          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." required oninput="handleUserTyping()" />
+          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." required />
           <button type="submit">Dispatch</button>
         </form>
         <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Acknowledge & Vanish Chat History</button>
@@ -152,7 +152,7 @@
         <span class="quick-chip vanish-chip" onclick="clearAllMessages()">⌧ Vanish</span>
       </div>
 
-      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..." oninput="handleAdminTyping()"></textarea>
+      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..."></textarea>
       <button class="admin-send-btn" onclick="sendAdminReply()">Transmit Reply to Employee</button>
     </main>
   </div>
@@ -161,13 +161,14 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
+    // Newly generated Firebase configuration for hcl-portal-v2
     const firebaseConfig = {
-      apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
-      authDomain: "hcl-portal-61844.firebaseapp.com",
-      projectId: "hcl-portal-61844",
-      storageBucket: "hcl-portal-61844.firebasestorage.app",
-      messagingSenderId: "706863694182",
-      appId: "1:706863694182:web:53f71d16ae0f8697e908a7"
+      apiKey: "AIzaSyC3-9DL9ZSy0_tRp7gmJ7esnj9SWy83S7M",
+      authDomain: "hcl-portal-v2.firebaseapp.com",
+      projectId: "hcl-portal-v2",
+      storageBucket: "hcl-portal-v2.firebasestorage.app",
+      messagingSenderId: "271546551836",
+      appId: "1:271546551836:web:c93c7e73cd01d02f2b99d9"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -176,7 +177,6 @@
     const TTL_MS = 30 * 60 * 1000;
     const ADMIN_PIN = "0090";
 
-    let typingTimeout = null;
     let isAdminUnlocked = false;
 
     function getTime() {
@@ -217,7 +217,6 @@
         err.style.display = "none";
         document.getElementById("adminPinAuthView").style.display = "none";
         document.getElementById("adminView").style.display = "flex";
-        initAdminStream();
       } else {
         err.style.display = "block";
         input.value = "";
@@ -273,15 +272,6 @@
       }
     });
 
-    async function checkExpiration(data) {
-      if (!data || !data.createdAt) return false;
-      if (Date.now() - data.createdAt >= TTL_MS) {
-        await clearAllMessages();
-        return true;
-      }
-      return false;
-    }
-
     window.clearAllMessages = async function() {
       try {
         await deleteDoc(ticketRef);
@@ -299,22 +289,6 @@
       }
     }
 
-    window.handleUserTyping = async function() {
-      clearTimeout(typingTimeout);
-      await updateDoc(ticketRef, { userTyping: true });
-      typingTimeout = setTimeout(async () => {
-        await updateDoc(ticketRef, { userTyping: false });
-      }, 1500);
-    };
-
-    window.handleAdminTyping = async function() {
-      clearTimeout(typingTimeout);
-      await updateDoc(ticketRef, { adminTyping: true });
-      typingTimeout = setTimeout(async () => {
-        await updateDoc(ticketRef, { adminTyping: false });
-      }, 1500);
-    };
-
     window.setQuickReply = function(text) {
       document.getElementById("adminReplyMsg").value = text;
     };
@@ -325,32 +299,51 @@
       return empName || 'You';
     }
 
-    function initAdminStream() {
-      onSnapshot(ticketRef, async (docSnap) => {
-        const box = document.getElementById("adminChatBox");
-        const typingEl = document.getElementById("adminTypingNotice");
+    // Single unified listener to prevent recursive snapshot loops
+    onSnapshot(ticketRef, (docSnap) => {
+      const userBox = document.getElementById("userChatBox");
+      const adminBox = document.getElementById("adminChatBox");
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (await checkExpiration(data)) return;
+      if (!docSnap.exists()) {
+        resetToForm();
+        if (adminBox) adminBox.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
+        return;
+      }
 
-          typingEl.style.display = data.userTyping ? "block" : "none";
+      const data = docSnap.data();
 
-          if (data.messages && data.messages.length > 0) {
-            box.innerHTML = data.messages.map(m => `
-              <div class="chat-entry ${m.sender}">
-                <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
-                <div class="chat-bubble">${m.text}</div>
-              </div>
-            `).join('');
-            box.scrollTop = box.scrollHeight;
-            return;
-          }
+      // Client-side auto-purge check (no repeating background write loop)
+      if (data.createdAt && (Date.now() - data.createdAt >= TTL_MS)) {
+        clearAllMessages();
+        return;
+      }
+
+      if (data.messages && data.messages.length > 0) {
+        // Render Employee View
+        if (userBox) {
+          document.getElementById("leanForm").style.display = "none";
+          document.getElementById("ticketView").style.display = "flex";
+          userBox.innerHTML = data.messages.map(m => `
+            <div class="chat-entry ${m.sender}">
+              <span class="chat-sender-info">${renderSenderLabel(m.sender, data.name)} • ${m.time}</span>
+              <div class="chat-bubble">${m.text}</div>
+            </div>
+          `).join('');
+          userBox.scrollTop = userBox.scrollHeight;
         }
-        box.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
-        typingEl.style.display = "none";
-      });
-    }
+
+        // Render Admin View
+        if (adminBox) {
+          adminBox.innerHTML = data.messages.map(m => `
+            <div class="chat-entry ${m.sender}">
+              <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
+              <div class="chat-bubble">${m.text}</div>
+            </div>
+          `).join('');
+          adminBox.scrollTop = adminBox.scrollHeight;
+        }
+      }
+    });
 
     window.submitProposal = async function(e) {
       e.preventDefault();
@@ -363,8 +356,6 @@
         id: document.getElementById("empId").value,
         idea: initialIdea,
         createdAt: Date.now(),
-        userTyping: false,
-        adminTyping: false,
         autoGreeted: true,
         messages: [
           { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() },
@@ -375,39 +366,7 @@
           }
         ]
       });
-
-      activateChat();
     };
-
-    function activateChat() {
-      document.getElementById("leanForm").style.display = "none";
-      document.getElementById("ticketView").style.display = "flex";
-
-      onSnapshot(ticketRef, async (docSnap) => {
-        if (!docSnap.exists()) {
-          resetToForm();
-          return;
-        }
-
-        const data = docSnap.data();
-        if (await checkExpiration(data)) return;
-
-        const box = document.getElementById("userChatBox");
-        const typingEl = document.getElementById("userTypingNotice");
-
-        typingEl.style.display = data.adminTyping ? "block" : "none";
-
-        if (data.messages && data.messages.length > 0) {
-          box.innerHTML = data.messages.map(m => `
-            <div class="chat-entry ${m.sender}">
-              <span class="chat-sender-info">${renderSenderLabel(m.sender, data.name)} • ${m.time}</span>
-              <div class="chat-bubble">${m.text}</div>
-            </div>
-          `).join('');
-          box.scrollTop = box.scrollHeight;
-        }
-      });
-    }
 
     window.sendUserReply = async function(e) {
       e.preventDefault();
@@ -419,21 +378,9 @@
       const snap = await getDoc(ticketRef);
       if (snap.exists()) {
         const data = snap.data();
-        if (await checkExpiration(data)) return;
-
         const list = data.messages || [];
         list.push({ sender: 'user', text: text, time: getTime() });
-
-        if (!data.autoGreeted) {
-          list.push({
-            sender: 'system',
-            text: `Thank you for reaching out. A reviewer has been assigned to this ticket. Please stand by.`,
-            time: getTime()
-          });
-          await updateDoc(ticketRef, { messages: list, userTyping: false, autoGreeted: true });
-        } else {
-          await updateDoc(ticketRef, { messages: list, userTyping: false });
-        }
+        await updateDoc(ticketRef, { messages: list });
       }
     };
 
@@ -446,35 +393,11 @@
       const snap = await getDoc(ticketRef);
       if (snap.exists()) {
         const data = snap.data();
-        if (await checkExpiration(data)) return;
-
         const list = data.messages || [];
         list.push({ sender: 'admin', text: text, time: getTime() });
-        await updateDoc(ticketRef, { messages: list, adminTyping: false });
+        await updateDoc(ticketRef, { messages: list });
       }
     };
-
-    setInterval(async () => {
-      const snap = await getDoc(ticketRef);
-      if (snap.exists()) {
-        await checkExpiration(snap.data());
-      }
-    }, 30000);
-
-    onSnapshot(ticketRef, async (docSnap) => {
-      if (window.location.hash !== "#admin") {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (await checkExpiration(data)) return;
-
-          if (data.messages && data.messages.length > 0) {
-            activateChat();
-            return;
-          }
-        }
-        resetToForm();
-      }
-    });
   </script>
 </body>
 </html>
