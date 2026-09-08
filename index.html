@@ -181,11 +181,10 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
-    // Direct configuration for Firebase Realtime Database (RTDB)
     const firebaseConfig = {
       apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
       authDomain: "hcl-portal-61844.firebaseapp.com",
-      databaseURL: "https://hcl-portal-61844-default-rtdb.firebaseio.com",
+      databaseURL: "https://hcl-portal-61844-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "hcl-portal-61844",
       storageBucket: "hcl-portal-61844.firebasestorage.app",
       messagingSenderId: "706863694182",
@@ -200,9 +199,46 @@
 
     let isUserUnlocked = false;
     let isAdminUnlocked = false;
+    let currentTicketData = null;
 
     function getTime() {
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderMessages() {
+      const userBox = document.getElementById("userChatBox");
+      const adminBox = document.getElementById("adminChatBox");
+
+      if (!currentTicketData || !currentTicketData.messages || currentTicketData.messages.length === 0) {
+        if (adminBox) adminBox.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
+        if (userBox) userBox.innerHTML = '';
+        return;
+      }
+
+      const list = currentTicketData.messages;
+      const empName = currentTicketData.name || 'Employee';
+
+      const buildHtml = (m) => `
+        <div class="chat-entry ${m.sender}">
+          <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}</span>
+          <div class="chat-bubble">
+            ${m.text ? `<div>${m.text}</div>` : ''}
+            ${m.image ? `<img src="${m.image}" alt="Attachment" style="max-width:100%; border-radius:4px; margin-top:4px;" />` : ''}
+          </div>
+        </div>
+      `;
+
+      const renderedHtml = list.map(buildHtml).join('');
+
+      if (userBox) {
+        userBox.innerHTML = renderedHtml;
+        userBox.scrollTop = userBox.scrollHeight;
+      }
+
+      if (adminBox) {
+        adminBox.innerHTML = renderedHtml;
+        adminBox.scrollTop = adminBox.scrollHeight;
+      }
     }
 
     function enforceView() {
@@ -218,6 +254,7 @@
         if (isAdminUnlocked) {
           adminPinView.style.display = "none";
           adminView.style.display = "flex";
+          renderMessages();
         } else {
           adminView.style.display = "none";
           adminPinView.style.display = "flex";
@@ -232,6 +269,7 @@
         if (isUserUnlocked) {
           userPinView.style.display = "none";
           userCard.style.display = "flex";
+          renderMessages();
         } else {
           userCard.style.display = "none";
           userPinView.style.display = "flex";
@@ -316,20 +354,13 @@
     document.getElementById("userLogoBrand").addEventListener("dblclick", togglePanic);
     document.getElementById("panicScreen").addEventListener("dblclick", togglePanic);
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        document.title = "HCLTech Intranet | Confluence";
-      } else if (!panicActive) {
-        document.title = "HCLTech Enterprise Service Management";
-      }
-    });
-
     window.clearAllMessages = async function() {
       try {
         await remove(ticketRef);
       } catch (err) {
         console.error(err);
       }
+      currentTicketData = null;
       resetToForm();
     };
 
@@ -339,17 +370,12 @@
         document.getElementById("leanForm").style.display = "block";
         document.getElementById("leanForm").reset();
       }
+      renderMessages();
     }
 
     window.setQuickReply = function(text) {
       document.getElementById("adminReplyMsg").value = text;
     };
-
-    function renderSenderLabel(sender, empName) {
-      if (sender === 'admin') return 'Desk Review Agent';
-      if (sender === 'system') return 'System Bot / Routing';
-      return empName || 'Employee';
-    }
 
     function compressImage(file, callback) {
       const reader = new FileReader();
@@ -402,14 +428,13 @@
       });
     };
 
+    // Listen to changes in Singapore RTDB
     onValue(ticketRef, (snapshot) => {
-      const userBox = document.getElementById("userChatBox");
-      const adminBox = document.getElementById("adminChatBox");
       const data = snapshot.val();
 
       if (!data) {
+        currentTicketData = null;
         resetToForm();
-        if (adminBox) adminBox.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
         return;
       }
 
@@ -418,29 +443,16 @@
         return;
       }
 
-      const buildHtml = (m) => `
-        <div class="chat-entry ${m.sender}">
-          <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
-          <div class="chat-bubble">
-            ${m.text ? `<div>${m.text}</div>` : ''}
-            ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
-          </div>
-        </div>
-      `;
+      currentTicketData = data;
 
       if (data.messages && data.messages.length > 0) {
-        if (userBox) {
-          document.getElementById("leanForm").style.display = "none";
-          document.getElementById("ticketView").style.display = "flex";
-          userBox.innerHTML = data.messages.map(buildHtml).join('');
-          userBox.scrollTop = userBox.scrollHeight;
-        }
-
-        if (adminBox) {
-          adminBox.innerHTML = data.messages.map(buildHtml).join('');
-          adminBox.scrollTop = adminBox.scrollHeight;
-        }
+        document.getElementById("leanForm").style.display = "none";
+        document.getElementById("ticketView").style.display = "flex";
       }
+
+      renderMessages();
+    }, (error) => {
+      console.error("Firebase RTDB sync error:", error);
     });
 
     window.submitProposal = async function(e) {
