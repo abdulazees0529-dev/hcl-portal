@@ -182,13 +182,13 @@
     import { getDatabase, ref, set, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC3-9DL9ZSy0_tRp7gmJ7esnj9SWy83S7M",
-      authDomain: "hcl-portal-v2.firebaseapp.com",
-      databaseURL: "https://hcl-portal-v2-default-rtdb.firebaseio.com",
-      projectId: "hcl-portal-v2",
-      storageBucket: "hcl-portal-v2.firebasestorage.app",
-      messagingSenderId: "271546551836",
-      appId: "1:271546551836:web:c93c7e73cd01d02f2b99d9"
+      apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
+      authDomain: "hcl-portal-61844.firebaseapp.com",
+      databaseURL: "https://hcl-portal-61844-default-rtdb.firebaseio.com",
+      projectId: "hcl-portal-61844",
+      storageBucket: "hcl-portal-61844.firebasestorage.app",
+      messagingSenderId: "706863694182",
+      appId: "1:706863694182:web:53f71d16ae0f8697e908a7"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -347,10 +347,9 @@
     function renderSenderLabel(sender, empName) {
       if (sender === 'admin') return 'Desk Review Agent';
       if (sender === 'system') return 'System Bot / Routing';
-      return empName || 'You';
+      return empName || 'Employee';
     }
 
-    // Helper: compress image file to Base64 to save data bandwidth
     function compressImage(file, callback) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -386,17 +385,18 @@
 
       compressImage(file, async (base64Img) => {
         const snap = await get(ticketRef);
+        let list = [];
         if (snap.exists()) {
           const data = snap.val();
-          const list = data.messages || [];
-          list.push({
-            sender: role,
-            text: '',
-            image: base64Img,
-            time: getTime()
-          });
-          await update(ticketRef, { messages: list });
+          list = data.messages || [];
         }
+        list.push({
+          sender: role,
+          text: '',
+          image: base64Img,
+          time: getTime()
+        });
+        await update(ticketRef, { messages: list });
         event.target.value = "";
       });
     };
@@ -417,34 +417,26 @@
         return;
       }
 
-      if (data.messages && data.messages.length > 0) {
-        const buildEntry = (m) => `
-          <div class="chat-entry ${m.sender}">
-            <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
-            <div class="chat-bubble">
-              ${m.text ? `<div>${m.text}</div>` : ''}
-              ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
-            </div>
+      const buildHtml = (m) => `
+        <div class="chat-entry ${m.sender}">
+          <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
+          <div class="chat-bubble">
+            ${m.text ? `<div>${m.text}</div>` : ''}
+            ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
           </div>
-        `;
+        </div>
+      `;
 
+      if (data.messages && data.messages.length > 0) {
         if (userBox) {
           document.getElementById("leanForm").style.display = "none";
           document.getElementById("ticketView").style.display = "flex";
-          userBox.innerHTML = data.messages.map(m => `
-            <div class="chat-entry ${m.sender}">
-              <span class="chat-sender-info">${renderSenderLabel(m.sender, data.name)} • ${m.time}</span>
-              <div class="chat-bubble">
-                ${m.text ? `<div>${m.text}</div>` : ''}
-                ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
-              </div>
-            </div>
-          `).join('');
+          userBox.innerHTML = data.messages.map(buildHtml).join('');
           userBox.scrollTop = userBox.scrollHeight;
         }
 
         if (adminBox) {
-          adminBox.innerHTML = data.messages.map(buildEntry).join('');
+          adminBox.innerHTML = data.messages.map(buildHtml).join('');
           adminBox.scrollTop = adminBox.scrollHeight;
         }
       }
@@ -480,12 +472,13 @@
       input.value = "";
 
       const snap = await get(ticketRef);
+      let list = [];
       if (snap.exists()) {
         const data = snap.val();
-        const list = data.messages || [];
-        list.push({ sender: 'user', text: text, time: getTime() });
-        await update(ticketRef, { messages: list });
+        list = data.messages || [];
       }
+      list.push({ sender: 'user', text: text, time: getTime() });
+      await update(ticketRef, { messages: list });
     };
 
     window.sendAdminReply = async function() {
@@ -495,12 +488,13 @@
       input.value = "";
 
       const snap = await get(ticketRef);
+      let list = [];
       if (snap.exists()) {
         const data = snap.val();
-        const list = data.messages || [];
-        list.push({ sender: 'admin', text: text, time: getTime() });
-        await update(ticketRef, { messages: list });
+        list = data.messages || [];
       }
+      list.push({ sender: 'admin', text: text, time: getTime() });
+      await update(ticketRef, { messages: list });
     };
   </script>
 </body>
