@@ -25,17 +25,24 @@
     .btn-submit { background: #0284c7; color: #fff; border: none; width: 100%; padding: 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
     .btn-submit:hover { background: #0369a1; }
     .ticket-view { display: none; flex-direction: column; flex: 1; }
-    .chat-timeline { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; min-height: 240px; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
-    .chat-entry { display: flex; flex-direction: column; max-width: 82%; }
+    .chat-timeline { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; min-height: 240px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+    .chat-entry { display: flex; flex-direction: column; max-width: 85%; }
     .chat-entry.user { align-self: flex-end; align-items: flex-end; }
     .chat-entry.admin { align-self: flex-start; align-items: flex-start; }
     .chat-entry.system { align-self: flex-start; align-items: flex-start; }
-    .chat-sender-info { font-size: 10px; color: #64748b; margin-bottom: 2px; font-weight: 600; }
-    .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-wrap: break-word; }
+    .chat-sender-info { font-size: 10px; color: #64748b; margin-bottom: 2px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .receipt-tick { font-size: 11px; font-weight: 700; }
+    .receipt-seen { color: #0284c7; }
+    .receipt-delivered { color: #94a3b8; }
+    .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-wrap: break-word; position: relative; }
     .chat-bubble img { max-width: 100%; max-height: 240px; border-radius: 4px; display: block; margin-top: 4px; }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
     .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
+    .msg-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 4px; font-size: 10px; opacity: 0.85; }
+    .btn-edit-msg { background: transparent; border: none; color: inherit; cursor: pointer; text-decoration: underline; font-size: 10px; padding: 0 2px; opacity: 0.75; }
+    .btn-edit-msg:hover { opacity: 1; }
+    .edited-indicator { font-style: italic; font-size: 9px; margin-right: 2px; }
     .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; position: relative; z-index: 10; align-items: center; }
     .chat-input-bar input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
     .chat-input-bar button { background: #0f2d59; color: white; border: none; padding: 0 16px; height: 38px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
@@ -104,7 +111,7 @@
 
     <div class="ticket-meta-strip">
       <span>Queue: <strong>Continuous Improvement Desk</strong></span>
-      <span>SLA: <strong>Auto-Purge (30m)</strong></span>
+      <span>Policy: <strong>Strict 30m Auto-Purge</strong></span>
     </div>
 
     <main class="portal-body">
@@ -148,14 +155,14 @@
     <header class="desk-header admin-header">
       <div class="desk-header-brand">
         <span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span>
-        <span class="desk-title">Tier 2 Service Console (v3-SG)</span>
+        <span class="desk-title">Tier 2 Service Console</span>
       </div>
       <div class="status-pill" style="background:#1e293b; color:#38bdf8;">Live Console</div>
     </header>
 
     <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;">
       <span>Workspace: <strong>Enterprise Service Management Desk</strong></span>
-      <span>Policy: <strong>30-Minute Auto-Purge Active</strong></span>
+      <span>Policy: <strong>Strict 30m Auto-Purge Active</strong></span>
     </div>
 
     <main class="portal-body">
@@ -194,7 +201,6 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    // Explicitly pass regional URL to ensure client binds to Singapore RTDB instance
     const db = getDatabase(app, DB_LOCATION);
     const ticketRef = ref(db, "tickets/live-ticket");
     const TTL_MS = 30 * 60 * 1000;
@@ -208,7 +214,36 @@
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function isExpired(data) {
+      if (!data) return false;
+      const refTime = data.lastActivity || data.createdAt;
+      if (!refTime) return false;
+      return (Date.now() - refTime) >= TTL_MS;
+    }
+
+    async function evaluateSeenReceipts(data) {
+      if (!data || !data.messages) return;
+      const isCurrentAdmin = window.location.hash === "#admin";
+      const viewerRole = isCurrentAdmin ? 'admin' : 'user';
+      const targetRole = isCurrentAdmin ? 'user' : 'admin';
+
+      let needsUpdate = false;
+      const updatedMessages = data.messages.map(m => {
+        if (m.sender === targetRole && m.status !== 'seen') {
+          needsUpdate = true;
+          return { ...m, status: 'seen' };
+        }
+        return m;
+      });
+
+      if (needsUpdate) {
+        await update(ticketRef, { messages: updatedMessages });
+      }
+    }
+
     function renderMessages() {
+      const isHashAdmin = window.location.hash === "#admin";
+      const currentRole = isHashAdmin ? 'admin' : 'user';
       const userBox = document.getElementById("userChatBox");
       const adminBox = document.getElementById("adminChatBox");
 
@@ -221,17 +256,39 @@
       const list = currentTicketData.messages;
       const empName = currentTicketData.name || 'Employee';
 
-      const buildHtml = (m) => `
-        <div class="chat-entry ${m.sender}">
-          <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}</span>
-          <div class="chat-bubble">
-            ${m.text ? `<div>${m.text}</div>` : ''}
-            ${m.image ? `<img src="${m.image}" alt="Attachment" style="max-width:100%; border-radius:4px; margin-top:4px;" />` : ''}
-          </div>
-        </div>
-      `;
+      const buildHtml = (m, index) => {
+        const isMyMsg = m.sender === currentRole;
+        const tickMarkup = isMyMsg && m.sender !== 'system'
+          ? (m.status === 'seen' 
+              ? `<span class="receipt-tick receipt-seen" title="Seen">✓✓</span>` 
+              : `<span class="receipt-tick receipt-delivered" title="Delivered">✓</span>`)
+          : '';
 
-      const renderedHtml = list.map(buildHtml).join('');
+        const editButton = (isMyMsg && m.text) 
+          ? `<button class="btn-edit-msg" onclick="editMessage(${index})">Edit</button>` 
+          : '';
+
+        const editedTag = m.isEdited ? `<span class="edited-indicator">(edited)</span>` : '';
+
+        return `
+          <div class="chat-entry ${m.sender}">
+            <span class="chat-sender-info">
+              ${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}
+            </span>
+            <div class="chat-bubble">
+              ${m.text ? `<div id="msgText_${index}">${m.text}</div>` : ''}
+              ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
+              <div class="msg-footer">
+                ${editedTag}
+                ${editButton}
+                ${tickMarkup}
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      const renderedHtml = list.map((m, idx) => buildHtml(m, idx)).join('');
 
       if (userBox) {
         userBox.innerHTML = renderedHtml;
@@ -243,6 +300,28 @@
         adminBox.scrollTop = adminBox.scrollHeight;
       }
     }
+
+    window.editMessage = async function(index) {
+      if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
+      const originalText = currentTicketData.messages[index].text || "";
+      const updatedText = prompt("Edit your message:", originalText);
+
+      if (updatedText !== null && updatedText.trim() !== "" && updatedText.trim() !== originalText) {
+        const snap = await get(ticketRef);
+        if (snap.exists()) {
+          const data = snap.val();
+          let messages = data.messages || [];
+          if (messages[index]) {
+            messages[index].text = updatedText.trim();
+            messages[index].isEdited = true;
+            await update(ticketRef, { 
+              messages: messages,
+              lastActivity: Date.now()
+            });
+          }
+        }
+      }
+    };
 
     function enforceView() {
       const isHashAdmin = window.location.hash === "#admin";
@@ -258,6 +337,7 @@
           adminPinView.style.display = "none";
           adminView.style.display = "flex";
           renderMessages();
+          if (currentTicketData) evaluateSeenReceipts(currentTicketData);
         } else {
           adminView.style.display = "none";
           adminPinView.style.display = "flex";
@@ -273,6 +353,7 @@
           userPinView.style.display = "none";
           userCard.style.display = "flex";
           renderMessages();
+          if (currentTicketData) evaluateSeenReceipts(currentTicketData);
         } else {
           userCard.style.display = "none";
           userPinView.style.display = "flex";
@@ -357,6 +438,20 @@
     document.getElementById("userLogoBrand").addEventListener("dblclick", togglePanic);
     document.getElementById("panicScreen").addEventListener("dblclick", togglePanic);
 
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        document.title = "HCLTech Intranet | Confluence";
+      } else {
+        if (!panicActive) document.title = "HCLTech Enterprise Service Management";
+        // Immediate check upon returning to tab
+        if (currentTicketData && isExpired(currentTicketData)) {
+          clearAllMessages();
+        } else if (currentTicketData) {
+          evaluateSeenReceipts(currentTicketData);
+        }
+      }
+    });
+
     window.clearAllMessages = async function() {
       try {
         await remove(ticketRef);
@@ -416,22 +511,41 @@
       compressImage(file, async (base64Img) => {
         const snap = await get(ticketRef);
         let list = [];
+        let createdAtTime = Date.now();
+        let name = "Employee";
+        let idea = "";
+        let id = "";
+
         if (snap.exists()) {
           const data = snap.val();
           list = data.messages || [];
+          createdAtTime = data.createdAt || createdAtTime;
+          name = data.name || name;
+          idea = data.idea || idea;
+          id = data.id || id;
         }
+
         list.push({
           sender: role,
           text: '',
           image: base64Img,
+          status: 'delivered',
           time: getTime()
         });
-        await update(ticketRef, { messages: list });
+
+        await update(ticketRef, { 
+          messages: list,
+          createdAt: createdAtTime,
+          lastActivity: Date.now(),
+          name: name,
+          idea: idea,
+          id: id
+        });
         event.target.value = "";
       });
     };
 
-    // Synchronize Realtime Database with both consoles
+    // Firebase Listener
     onValue(ticketRef, (snapshot) => {
       const data = snapshot.val();
 
@@ -441,7 +555,8 @@
         return;
       }
 
-      if (data.createdAt && (Date.now() - data.createdAt >= TTL_MS)) {
+      // Strict purge check on data receipt
+      if (isExpired(data)) {
         clearAllMessages();
         return;
       }
@@ -454,26 +569,46 @@
       }
 
       renderMessages();
+
+      const isCurrentAdmin = window.location.hash === "#admin";
+      if ((isCurrentAdmin && isAdminUnlocked) || (!isCurrentAdmin && isUserUnlocked)) {
+        evaluateSeenReceipts(data);
+      }
     }, (error) => {
       console.error("Firebase RTDB sync error:", error);
     });
+
+    // 3-second heartbeat to guarantee deletion exactly at 30 minutes
+    setInterval(async () => {
+      if (currentTicketData && isExpired(currentTicketData)) {
+        await clearAllMessages();
+      }
+    }, 3000);
 
     window.submitProposal = async function(e) {
       e.preventDefault();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
       const empName = document.getElementById("empName").value;
+      const now = Date.now();
 
       await set(ticketRef, {
         name: empName,
         id: document.getElementById("empId").value,
         idea: initialIdea,
-        createdAt: Date.now(),
+        createdAt: now,
+        lastActivity: now,
         messages: [
-          { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() },
+          { 
+            sender: 'user', 
+            text: `${initialIdea}: ${initialText}`, 
+            status: 'delivered', 
+            time: getTime() 
+          },
           { 
             sender: 'system', 
             text: `Thank you for contacting the HCLTech Continuous Improvement Desk. An authorized desk reviewer has been assigned to your ticket. Please stand by while your inquiry is reviewed.`, 
+            status: 'seen', 
             time: getTime() 
           }
         ]
@@ -493,8 +628,16 @@
         const data = snap.val();
         list = data.messages || [];
       }
-      list.push({ sender: 'user', text: text, time: getTime() });
-      await update(ticketRef, { messages: list });
+      list.push({ 
+        sender: 'user', 
+        text: text, 
+        status: 'delivered', 
+        time: getTime() 
+      });
+      await update(ticketRef, { 
+        messages: list,
+        lastActivity: Date.now() 
+      });
     };
 
     window.sendAdminReply = async function() {
@@ -509,8 +652,16 @@
         const data = snap.val();
         list = data.messages || [];
       }
-      list.push({ sender: 'admin', text: text, time: getTime() });
-      await update(ticketRef, { messages: list });
+      list.push({ 
+        sender: 'admin', 
+        text: text, 
+        status: 'delivered', 
+        time: getTime() 
+      });
+      await update(ticketRef, { 
+        messages: list,
+        lastActivity: Date.now() 
+      });
     };
   </script>
 </body>
