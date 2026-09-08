@@ -40,7 +40,6 @@
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
     .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
     
-    /* Instagram Link Cards */
     .ig-link-card { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0; padding: 7px 11px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; word-break: break-all; transition: background 0.2s; }
     .user .ig-link-card { background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.35); }
     .user .ig-link-card:hover { background: rgba(255, 255, 255, 0.28); }
@@ -121,7 +120,7 @@
 
     <div class="ticket-meta-strip">
       <span>Queue: <strong>Continuous Improvement Desk</strong></span>
-      <span>Policy: <strong>Strict 30m Auto-Purge</strong></span>
+      <span>Policy: <strong>Strict 30m Auto-Purge (From Start)</strong></span>
     </div>
 
     <main class="portal-body">
@@ -213,7 +212,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app, DB_LOCATION);
     const ticketRef = ref(db, "tickets/live-ticket");
-    const TTL_MS = 30 * 60 * 1000;
+    const TTL_MS = 30 * 60 * 1000; // Exact 30 minutes in milliseconds
     const SHARED_PIN = "0090";
 
     let isUserUnlocked = false;
@@ -224,14 +223,12 @@
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    // STRICT 30-MINUTE EXPIRATION: Anchored permanently to ticket creation time
     function isExpired(data) {
-      if (!data) return false;
-      const refTime = data.lastActivity || data.createdAt;
-      if (!refTime) return false;
-      return (Date.now() - refTime) >= TTL_MS;
+      if (!data || !data.createdAt) return false;
+      return (Date.now() - data.createdAt) >= TTL_MS;
     }
 
-    // Parses text and converts Instagram & generic links into clickable components
     function formatMessageText(raw) {
       if (!raw) return '';
       const urlPattern = /(https?:\/\/[^\s]+)/g;
@@ -327,7 +324,7 @@
     window.editMessage = async function(index) {
       if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
       const originalText = currentTicketData.messages[index].text || "";
-      const updatedText = prompt("Edit your message or Instagram URL:", originalText);
+      const updatedText = prompt("Edit your message:", originalText);
 
       if (updatedText !== null && updatedText.trim() !== "" && updatedText.trim() !== originalText) {
         const snap = await get(ticketRef);
@@ -337,10 +334,7 @@
           if (messages[index]) {
             messages[index].text = updatedText.trim();
             messages[index].isEdited = true;
-            await update(ticketRef, { 
-              messages: messages,
-              lastActivity: Date.now()
-            });
+            await update(ticketRef, { messages: messages });
           }
         }
       }
@@ -558,7 +552,6 @@
         await update(ticketRef, { 
           messages: list,
           createdAt: createdAtTime,
-          lastActivity: Date.now(),
           name: name,
           idea: idea,
           id: id
@@ -577,6 +570,7 @@
         return;
       }
 
+      // Hard check: If 30 mins from original creation has passed, wipe immediately
       if (isExpired(data)) {
         clearAllMessages();
         return;
@@ -599,12 +593,12 @@
       console.error("Firebase RTDB sync error:", error);
     });
 
-    // Active heartbeat check for the 30-minute purge
+    // Aggressive 2-second background heartbeat ensuring strict 30-min auto-purge
     setInterval(async () => {
       if (currentTicketData && isExpired(currentTicketData)) {
         await clearAllMessages();
       }
-    }, 3000);
+    }, 2000);
 
     window.submitProposal = async function(e) {
       e.preventDefault();
@@ -617,8 +611,7 @@
         name: empName,
         id: document.getElementById("empId").value,
         idea: initialIdea,
-        createdAt: now,
-        lastActivity: now,
+        createdAt: now, // Firm timestamp from which the 30-min timer starts
         messages: [
           { 
             sender: 'user', 
@@ -655,10 +648,8 @@
         status: 'delivered', 
         time: getTime() 
       });
-      await update(ticketRef, { 
-        messages: list,
-        lastActivity: Date.now() 
-      });
+      // Do NOT update createdAt or rolling timers here so 30-minute absolute clock keeps running
+      await update(ticketRef, { messages: list });
     };
 
     window.sendAdminReply = async function() {
@@ -679,10 +670,8 @@
         status: 'delivered', 
         time: getTime() 
       });
-      await update(ticketRef, { 
-        messages: list,
-        lastActivity: Date.now() 
-      });
+      // Do NOT update createdAt or rolling timers here
+      await update(ticketRef, { messages: list });
     };
   </script>
 </body>
