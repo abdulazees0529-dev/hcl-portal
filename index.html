@@ -24,7 +24,6 @@
     .btn-submit { background: #0284c7; color: #fff; border: none; width: 100%; padding: 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
     .ticket-view { display: none; flex-direction: column; flex: 1; position: relative; }
     
-    /* Scroll Down Arrow */
     .timeline-container { position: relative; display: flex; flex-direction: column; }
     .chat-timeline { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; min-height: 240px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; scroll-behavior: smooth; }
     .scroll-bottom-btn { display: none; position: absolute; right: 16px; bottom: 24px; width: 34px; height: 34px; border-radius: 50%; background: #0f2d59; color: #ffffff; border: 1px solid #38bdf8; box-shadow: 0 4px 10px rgba(0,0,0,0.25); cursor: pointer; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; z-index: 20; transition: transform 0.15s, opacity 0.2s; }
@@ -54,12 +53,14 @@
     .btn-delete-msg { color: #fecaca; }
     .admin .btn-delete-msg { color: #ef4444; }
     
-    .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; align-items: center; }
+    .chat-input-bar { display: flex; gap: 4px; margin-bottom: 10px; align-items: center; }
     .chat-input-bar input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
     .chat-input-bar button { background: #0f2d59; color: white; border: none; padding: 0 16px; height: 38px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
-    .btn-attach { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #475569 !important; font-size: 16px !important; padding: 0 12px !important; }
+    .btn-attach { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #475569 !important; font-size: 16px !important; padding: 0 10px !important; }
     .btn-call { background: #059669 !important; color: white !important; font-size: 13px !important; }
-    .btn-call-admin { background: #059669; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-screen { background: #2563eb !important; color: white !important; font-size: 13px !important; }
+    .btn-call-admin { background: #059669; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-screen-admin { background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; margin-left:4px; }
     .btn-vanish { width: 100%; background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
     
     .auth-view-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; padding: 24px; background: #0b1120; }
@@ -93,6 +94,10 @@
     #localVideo { position: absolute; top: 16px; right: 16px; width: 90px; height: 130px; object-fit: cover; border-radius: 6px; border: 2px solid #38bdf8; z-index: 10; background: #1e293b; }
     .call-controls { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; background: #0f172a; }
     .btn-end-call { background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    
+    .e2ee-badge { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 9px; color: #10b981; background: #ecfdf5; padding: 4px; border-radius: 4px; margin-bottom: 8px; font-weight: 700; border: 1px solid #a7f3d0; }
+    .admin-timeline .e2ee-badge { background: #064e3b; color: #34d399; border-color: #047857; }
+
     @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } .portal-body { padding: 12px; padding-bottom: 90px; } }
   </style>
 </head>
@@ -103,7 +108,7 @@
       <video id="localVideo" autoplay playsinline muted></video>
     </div>
     <div class="call-controls">
-      <button class="btn-end-call" onclick="endCall()">End Video Call</button>
+      <button class="btn-end-call" onclick="endCall()">End Session</button>
     </div>
   </div>
 
@@ -151,8 +156,9 @@
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
           <input type="file" id="userPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'user')" />
           <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()">📎</button>
-          <button type="button" class="btn-attach btn-call" onclick="startCall('user')">📹</button>
-          <input type="text" id="userReplyInput" placeholder="Send reply or link..." oninput="handleTyping('user')" />
+          <button type="button" class="btn-attach btn-call" onclick="startCall('user', 'camera')" title="Video Call">📹</button>
+          <button type="button" class="btn-attach btn-screen" onclick="startCall('user', 'screen')" title="Share Screen">🖥️</button>
+          <input type="text" id="userReplyInput" placeholder="Send encrypted reply..." oninput="handleTyping('user')" />
           <button type="submit">Dispatch</button>
         </form>
         <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Vanish Session History</button>
@@ -172,8 +178,11 @@
 
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
-      <div class="desk-header-brand"><span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span><span class="desk-title">Tier 2 Service Console</span></div>
-      <button type="button" class="btn-call-admin" onclick="startCall('admin')">📹 Video Call</button>
+      <div class="desk-header-brand"><span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span><span class="desk-title">Tier 2 Console</span></div>
+      <div>
+        <button type="button" class="btn-call-admin" onclick="startCall('admin', 'camera')">📹 Video</button>
+        <button type="button" class="btn-screen-admin" onclick="startCall('admin', 'screen')">🖥️ Screen</button>
+      </div>
     </header>
     <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;"><span>Workspace Live</span><span>Strict 30m Auto-Purge</span></div>
     <main class="portal-body">
@@ -185,10 +194,9 @@
       <div class="quick-replies">
         <span class="quick-chip" onclick="setQuickReply('Desk Lead evaluating. Stand by.')">Evaluating</span>
         <span class="quick-chip" onclick="setQuickReply('Logged for sprint.')">Logged</span>
-        <span class="quick-chip" onclick="setQuickReply('Notes are noted.')">Noted</span>
         <span class="quick-chip vanish-chip" onclick="clearAllMessages()">⌧ Vanish</span>
       </div>
-      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Desk response..." oninput="handleTyping('admin')"></textarea>
+      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Send encrypted response..." oninput="handleTyping('admin')"></textarea>
       <div class="admin-actions-bar">
         <input type="file" id="adminPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'admin')" />
         <button type="button" class="btn-attach" onclick="document.getElementById('adminPhotoInput').click()" style="background:#1e293b !important; color:#38bdf8 !important;">📎 Photo</button>
@@ -223,18 +231,25 @@
 
     let isUserUnlocked = false;
     let isAdminUnlocked = false;
-    let currentTicketData = null;
+    let currentTicketData = null; // Holds RAW Encrypted Firebase data
     let lastInteractionTime = Date.now();
     let typingTimer = null;
+    
+    // --- WebRTC Video & Screen Share ---
     let pc = null;
     let localStream = null;
     const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    async function initMedia() {
-      if (!localStream) {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    async function initMedia(type) {
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); }
+      try {
+        if (type === 'screen') {
+          localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        } else {
+          localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        }
         document.getElementById('localVideo').srcObject = localStream;
-      }
+      } catch (e) { throw e; }
       return localStream;
     }
 
@@ -251,17 +266,17 @@
       return pc;
     }
 
-    window.startCall = async function(role) {
+    window.startCall = async function(role, type) {
       recordActivity();
       try {
-        await initMedia();
+        await initMedia(type);
         document.getElementById('videoCallModal').style.display = 'flex';
         const peer = createPeer();
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
-        await set(callRef, { caller: role, active: true, offer: { type: offer.type, sdp: offer.sdp } });
+        await set(callRef, { caller: role, type: type, active: true, offer: { type: offer.type, sdp: offer.sdp } });
       } catch (err) {
-        alert("Camera/Microphone error: " + err.message);
+        if (err.name !== 'NotAllowedError') alert("Media access error: " + err.message);
       }
     };
 
@@ -281,14 +296,18 @@
         return;
       }
       if (callData.caller !== currentRole && callData.offer && !pc) {
-        if (confirm(`Incoming call from ${callData.caller === 'admin' ? 'Desk Lead' : 'Employee'}. Accept?`)) {
-          await initMedia();
-          document.getElementById('videoCallModal').style.display = 'flex';
-          const peer = createPeer();
-          await peer.setRemoteDescription(new RTCSessionDescription(callData.offer));
-          const answer = await peer.createAnswer();
-          await peer.setLocalDescription(answer);
-          await update(callRef, { answer: { type: answer.type, sdp: answer.sdp } });
+        const streamType = callData.type === 'screen' ? "Screen Share" : "Video Call";
+        if (confirm(`Incoming ${streamType} from ${callData.caller === 'admin' ? 'Desk Lead' : 'Employee'}. Accept?`)) {
+          try {
+            // We just view their screen/camera. No need to force our screen back, just get our camera or audio.
+            await initMedia('camera'); 
+            document.getElementById('videoCallModal').style.display = 'flex';
+            const peer = createPeer();
+            await peer.setRemoteDescription(new RTCSessionDescription(callData.offer));
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            await update(callRef, { answer: { type: answer.type, sdp: answer.sdp } });
+          } catch(e) {}
         } else {
           endCall();
         }
@@ -302,14 +321,61 @@
       if (pc && snap.val()) pc.addIceCandidate(new RTCIceCandidate(snap.val())).catch(() => {});
     });
 
+    // --- End-To-End Encryption (E2EE) Core ---
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    let aesKey = null;
+
+    async function initCrypto() {
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw", encoder.encode(SHARED_PIN), { name: "PBKDF2" }, false, ["deriveKey"]
+      );
+      aesKey = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: encoder.encode("hcl-stealth-salt"), iterations: 100000, hash: "SHA-256" },
+        keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+      );
+    }
+
+    function bufferToBase64(buf) {
+      const bytes = new Uint8Array(buf);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    }
+
+    function base64ToBuffer(b64) {
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    async function encryptData(plainText) {
+      if (!plainText) return plainText;
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encryptedBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, aesKey, encoder.encode(plainText));
+      return bufferToBase64(iv) + ":" + bufferToBase64(encryptedBuf);
+    }
+
+    async function decryptData(cipherStr) {
+      if (!cipherStr || !cipherStr.includes(":")) return cipherStr; // fallback for unencrypted system msgs
+      try {
+        const parts = cipherStr.split(":");
+        const iv = base64ToBuffer(parts[0]);
+        const data = base64ToBuffer(parts[1]);
+        const decryptedBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, data);
+        return decoder.decode(decryptedBuf);
+      } catch (e) {
+        return "🔒 [Encrypted message corrupted or key mismatch]";
+      }
+    }
+
+    // --- General UI Logic ---
     window.openLightbox = function(src) {
       document.getElementById("lightboxImage").src = src;
       document.getElementById("lightboxModal").style.display = "flex";
     };
-
-    window.closeLightbox = function() {
-      document.getElementById("lightboxModal").style.display = "none";
-    };
+    window.closeLightbox = function() { document.getElementById("lightboxModal").style.display = "none"; };
 
     function recordActivity() { lastInteractionTime = Date.now(); }
     ['mousedown', 'mousemove', 'keypress', 'touchstart', 'scroll', 'click'].forEach(e => {
@@ -318,8 +384,7 @@
 
     setInterval(() => {
       if ((isUserUnlocked || isAdminUnlocked) && (Date.now() - lastInteractionTime >= IDLE_LIMIT_MS)) {
-        isUserUnlocked = false;
-        isAdminUnlocked = false;
+        isUserUnlocked = false; isAdminUnlocked = false;
         document.getElementById("userPinInput").value = "";
         document.getElementById("pinCodeInput").value = "";
         closeLightbox();
@@ -342,8 +407,7 @@
     }
 
     window.handleTyping = function(role) {
-      recordActivity();
-      update(typingRef, { [role]: true });
+      recordActivity(); update(typingRef, { [role]: true });
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => update(typingRef, { [role]: false }), 1500);
     };
@@ -356,7 +420,6 @@
       if (a) a.innerText = val.user ? "Employee is typing..." : "";
     });
 
-    // --- Scroll Down Handlers ---
     window.handleTimelineScroll = function(role) {
       recordActivity();
       const el = (role === 'admin') ? document.getElementById("adminChatBox") : document.getElementById("userChatBox");
@@ -370,10 +433,7 @@
       recordActivity();
       const el = (role === 'admin') ? document.getElementById("adminChatBox") : document.getElementById("userChatBox");
       const btn = (role === 'admin') ? document.getElementById("adminScrollBtn") : document.getElementById("userScrollBtn");
-      if (el) {
-        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-        if (btn) btn.style.display = "none";
-      }
+      if (el) { el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); if (btn) btn.style.display = "none"; }
     };
 
     async function evaluateSeenReceipts(data) {
@@ -387,18 +447,18 @@
       if (needsUpdate) await update(ticketRef, { messages: updatedMessages });
     }
 
-    function renderMessages() {
+    // --- Core Rendering & Decryption ---
+    async function renderMessages(decryptedMessages) {
       const currentRole = (window.location.hash === "#admin") ? 'admin' : 'user';
       const userBox = document.getElementById("userChatBox");
       const adminBox = document.getElementById("adminChatBox");
 
-      if (!currentTicketData || !currentTicketData.messages || currentTicketData.messages.length === 0) {
+      if (!decryptedMessages || decryptedMessages.length === 0) {
         if (adminBox) adminBox.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
         if (userBox) userBox.innerHTML = '';
         return;
       }
 
-      const list = currentTicketData.messages;
       const empName = currentTicketData.name || 'Employee';
 
       const buildHtml = (m, index) => {
@@ -409,10 +469,12 @@
         const editButton = (isMyMsg && m.text) ? `<button class="btn-action-msg" onclick="editMessage(${index})">Edit</button>` : '';
         const deleteButton = isMyMsg ? `<button class="btn-action-msg btn-delete-msg" onclick="deleteMessage(${index})">Delete</button>` : '';
         const editedTag = m.isEdited ? `<span style="font-style:italic; font-size:9px; margin-right:2px;">(edited)</span>` : '';
+        const isE2EE = (m.sender !== 'system');
 
         return `
           <div class="chat-entry ${m.sender}">
             <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}</span>
+            ${isE2EE && index === 1 ? `<div class="e2ee-badge">🔒 End-to-End Encrypted Session</div>` : ''}
             <div class="chat-bubble">
               ${m.text ? `<div>${formatMessageText(m.text)}</div>` : ''}
               ${m.image ? `<img src="${m.image}" alt="Attachment" onclick="openLightbox('${m.image}')" />` : ''}
@@ -422,30 +484,23 @@
         `;
       };
 
-      const renderedHtml = list.map((m, idx) => buildHtml(m, idx)).join('');
-      if (userBox) { 
-        userBox.innerHTML = renderedHtml; 
-        userBox.scrollTop = userBox.scrollHeight;
-        handleTimelineScroll('user');
-      }
-      if (adminBox) { 
-        adminBox.innerHTML = renderedHtml; 
-        adminBox.scrollTop = adminBox.scrollHeight;
-        handleTimelineScroll('admin');
-      }
+      const renderedHtml = decryptedMessages.map((m, idx) => buildHtml(m, idx)).join('');
+      if (userBox) { userBox.innerHTML = renderedHtml; handleTimelineScroll('user'); }
+      if (adminBox) { adminBox.innerHTML = renderedHtml; handleTimelineScroll('admin'); }
     }
 
-    // --- Message Edit & Delete Functions ---
     window.editMessage = async function(index) {
       recordActivity();
       if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
-      const updatedText = prompt("Edit message:", currentTicketData.messages[index].text || "");
+      // We must decrypt the RAW data to edit it
+      const decText = await decryptData(currentTicketData.messages[index].text);
+      const updatedText = prompt("Edit encrypted message:", decText);
       if (updatedText !== null && updatedText.trim() !== "") {
         const snap = await get(ticketRef);
         if (snap.exists()) {
           let messages = snap.val().messages || [];
           if (messages[index]) {
-            messages[index].text = updatedText.trim();
+            messages[index].text = await encryptData(updatedText.trim());
             messages[index].isEdited = true;
             await update(ticketRef, { messages: messages });
           }
@@ -466,7 +521,7 @@
       }
     };
 
-    function enforceView() {
+    async function enforceView() {
       const isHashAdmin = window.location.hash === "#admin";
       const uCard = document.getElementById("userCard");
       const uPin = document.getElementById("userPinAuthView");
@@ -474,49 +529,41 @@
       const aView = document.getElementById("adminView");
 
       if (isHashAdmin) {
-        uPin.style.display = "none";
-        uCard.style.display = "none";
+        uPin.style.display = "none"; uCard.style.display = "none";
         if (isAdminUnlocked) {
-          aPin.style.display = "none";
-          aView.style.display = "flex";
-          renderMessages();
-          if (currentTicketData) evaluateSeenReceipts(currentTicketData);
+          aPin.style.display = "none"; aView.style.display = "flex";
+          if (!aesKey) await initCrypto();
         } else {
-          aView.style.display = "none";
-          aPin.style.display = "flex";
+          aView.style.display = "none"; aPin.style.display = "flex";
         }
       } else {
-        aPin.style.display = "none";
-        aView.style.display = "none";
+        aPin.style.display = "none"; aView.style.display = "none";
         if (isUserUnlocked) {
-          uPin.style.display = "none";
-          uCard.style.display = "flex";
-          renderMessages();
-          if (currentTicketData) evaluateSeenReceipts(currentTicketData);
+          uPin.style.display = "none"; uCard.style.display = "flex";
+          if (!aesKey) await initCrypto();
         } else {
-          uCard.style.display = "none";
-          uPin.style.display = "flex";
+          uCard.style.display = "none"; uPin.style.display = "flex";
         }
       }
     }
 
-    window.verifyUserPin = function() {
+    window.verifyUserPin = async function() {
       if (document.getElementById("userPinInput").value.trim() === SHARED_PIN) {
-        isUserUnlocked = true;
-        lastInteractionTime = Date.now();
+        isUserUnlocked = true; lastInteractionTime = Date.now();
         document.getElementById("userPinErrorMsg").style.display = "none";
-        enforceView();
+        await enforceView();
+        triggerFirebaseReRead();
       } else {
         document.getElementById("userPinErrorMsg").style.display = "block";
       }
     };
 
-    window.verifyPin = function() {
+    window.verifyPin = async function() {
       if (document.getElementById("pinCodeInput").value.trim() === SHARED_PIN) {
-        isAdminUnlocked = true;
-        lastInteractionTime = Date.now();
+        isAdminUnlocked = true; lastInteractionTime = Date.now();
         document.getElementById("pinErrorMsg").style.display = "none";
-        enforceView();
+        await enforceView();
+        triggerFirebaseReRead();
       } else {
         document.getElementById("pinErrorMsg").style.display = "block";
       }
@@ -525,8 +572,7 @@
     window.addEventListener("hashchange", enforceView);
     enforceView();
 
-    let lastEscTime = 0;
-    let panicActive = false;
+    let lastEscTime = 0; let panicActive = false;
     function togglePanic() {
       panicActive = !panicActive;
       document.getElementById("panicScreen").style.display = panicActive ? "block" : "none";
@@ -545,14 +591,14 @@
 
     window.clearAllMessages = async function() {
       endCall();
-      try { await remove(ticketRef); } catch (err) { console.error(err); }
+      try { await remove(ticketRef); } catch (err) {}
       currentTicketData = null;
       if (window.location.hash !== "#admin") {
         document.getElementById("ticketView").style.display = "none";
         document.getElementById("leanForm").style.display = "block";
         document.getElementById("leanForm").reset();
       }
-      renderMessages();
+      renderMessages([]);
     };
 
     window.setQuickReply = function(text) {
@@ -572,7 +618,7 @@
           else if (height > maxDim) { width = Math.round((width * maxDim) / height); height = maxDim; }
           canvas.width = width; canvas.height = height;
           canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-          callback(canvas.toDataURL("image/jpeg", 0.7));
+          callback(canvas.toDataURL("image/jpeg", 0.6));
         };
         img.src = e.target.result;
       };
@@ -585,30 +631,56 @@
       if (!file) return;
       compressImage(file, async (base64Img) => {
         const snap = await get(ticketRef);
-        let list = [];
-        let createdAtTime = Date.now();
+        let list = []; let createdAtTime = Date.now();
         if (snap.exists()) {
           const data = snap.val();
-          list = data.messages || [];
-          createdAtTime = data.createdAt || createdAtTime;
+          list = data.messages || []; createdAtTime = data.createdAt || createdAtTime;
         }
-        list.push({ sender: role, text: '', image: base64Img, status: 'delivered', time: getTime() });
+        
+        // Encrypt Image Base64 String
+        const encImage = await encryptData(base64Img);
+        list.push({ sender: role, text: '', image: encImage, status: 'delivered', time: getTime() });
         await update(ticketRef, { messages: list, createdAt: createdAtTime });
         event.target.value = "";
       });
     };
 
-    onValue(ticketRef, (snapshot) => {
-      const data = snapshot.val();
-      if (!data) { currentTicketData = null; renderMessages(); return; }
+    async function processFirebaseData(data) {
+      if (!data) { currentTicketData = null; renderMessages([]); return; }
       if (isExpired(data)) { clearAllMessages(); return; }
-      currentTicketData = data;
-      if (data.messages && data.messages.length > 0) {
+      
+      currentTicketData = data; // Keep RAW Encrypted cache
+      
+      // Decrypt for UI
+      let decMsgs = [];
+      if (data.messages) {
         document.getElementById("leanForm").style.display = "none";
         document.getElementById("ticketView").style.display = "flex";
+        
+        // Ensure Crypto is ready
+        if (!aesKey) await initCrypto();
+
+        for (let m of data.messages) {
+          decMsgs.push({
+            ...m,
+            text: m.text ? await decryptData(m.text) : '',
+            image: m.image ? await decryptData(m.image) : ''
+          });
+        }
       }
-      renderMessages();
+      await renderMessages(decMsgs);
       evaluateSeenReceipts(data);
+    }
+
+    function triggerFirebaseReRead() {
+      get(ticketRef).then(snap => processFirebaseData(snap.val()));
+    }
+
+    onValue(ticketRef, async (snapshot) => {
+      // Only process automatically if the user is unlocked to save processing
+      if (isUserUnlocked || isAdminUnlocked) {
+        await processFirebaseData(snapshot.val());
+      }
     });
 
     setInterval(async () => {
@@ -616,46 +688,50 @@
     }, 2000);
 
     window.submitProposal = async function(e) {
-      e.preventDefault();
-      recordActivity();
+      e.preventDefault(); recordActivity();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
+      
+      if (!aesKey) await initCrypto();
+      const encText = await encryptData(`${initialIdea}: ${initialText}`);
+
       await set(ticketRef, {
         name: document.getElementById("empName").value,
         id: document.getElementById("empId").value,
         idea: initialIdea,
         createdAt: Date.now(),
         messages: [
-          { sender: 'user', text: `${initialIdea}: ${initialText}`, status: 'delivered', time: getTime() },
-          { sender: 'system', text: `Continuous Improvement Desk session assigned.`, status: 'seen', time: getTime() }
+          { sender: 'user', text: encText, status: 'delivered', time: getTime() },
+          { sender: 'system', text: `Continuous Improvement Desk session assigned. E2E Encryption Active.`, status: 'seen', time: getTime() }
         ]
       });
     };
 
     window.sendUserReply = async function(e) {
-      e.preventDefault();
-      recordActivity();
-      update(typingRef, { user: false });
+      e.preventDefault(); recordActivity(); update(typingRef, { user: false });
       const input = document.getElementById("userReplyInput");
       const text = input.value.trim();
-      if (!text) return;
-      input.value = "";
+      if (!text) return; input.value = "";
+      
       const snap = await get(ticketRef);
       let list = snap.exists() ? (snap.val().messages || []) : [];
-      list.push({ sender: 'user', text: text, status: 'delivered', time: getTime() });
+      
+      const encText = await encryptData(text);
+      list.push({ sender: 'user', text: encText, status: 'delivered', time: getTime() });
       await update(ticketRef, { messages: list });
     };
 
     window.sendAdminReply = async function() {
-      recordActivity();
-      update(typingRef, { admin: false });
+      recordActivity(); update(typingRef, { admin: false });
       const input = document.getElementById("adminReplyMsg");
       const text = input.value.trim();
-      if (!text) return;
-      input.value = "";
+      if (!text) return; input.value = "";
+      
       const snap = await get(ticketRef);
       let list = snap.exists() ? (snap.val().messages || []) : [];
-      list.push({ sender: 'admin', text: text, status: 'delivered', time: getTime() });
+      
+      const encText = await encryptData(text);
+      list.push({ sender: 'admin', text: encText, status: 'delivered', time: getTime() });
       await update(ticketRef, { messages: list });
     };
   </script>
