@@ -32,16 +32,17 @@
     .chat-entry.system { align-self: flex-start; align-items: flex-start; }
     .chat-sender-info { font-size: 10px; color: #64748b; margin-bottom: 2px; font-weight: 600; }
     .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-wrap: break-word; }
+    .chat-bubble img { max-width: 100%; max-height: 240px; border-radius: 4px; display: block; margin-top: 4px; }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
     .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
-    .typing-notice { font-size: 11px; color: #0284c7; font-style: italic; min-height: 16px; margin-bottom: 6px; display: none; }
-    .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; position: relative; z-index: 10; }
+    .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; position: relative; z-index: 10; align-items: center; }
     .chat-input-bar input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
-    .chat-input-bar button { background: #0f2d59; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .chat-input-bar button { background: #0f2d59; color: white; border: none; padding: 0 16px; height: 38px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .btn-attach { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #475569 !important; font-size: 16px !important; padding: 0 12px !important; cursor: pointer; }
     .btn-vanish { width: 100%; background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
     .btn-vanish:hover { background: #f1f5f9; color: #334155; }
-    #adminPinAuthView { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; padding: 24px; background: #0b1120; }
+    .auth-view-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; padding: 24px; background: #0b1120; }
     .pin-box { background: #1e293b; border: 1px solid #334155; padding: 28px 24px; border-radius: 8px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
     .pin-title { color: #f8fafc; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
     .pin-subtitle { color: #94a3b8; font-size: 12px; margin-bottom: 18px; }
@@ -61,7 +62,8 @@
     .quick-chip:hover { color: #f8fafc; border-color: #38bdf8; }
     .vanish-chip { background: #271e24; color: #f87171; border: 1px dashed #7f1d1d; }
     .vanish-chip:hover { background: #3f1d24; color: #fca5a5; border-color: #ef4444; }
-    .admin-send-btn { background: #0284c7; color: white; border: none; font-weight: 600; width: 100%; padding: 11px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; }
+    .admin-actions-bar { display: flex; gap: 6px; margin-bottom: 6px; }
+    .admin-send-btn { background: #0284c7; color: white; border: none; font-weight: 600; flex: 1; padding: 11px; border-radius: 6px; cursor: pointer; }
     #panicScreen { display: none; background: #ffffff; color: #1e293b; padding: 30px; height: 100vh; width: 100vw; box-sizing: border-box; overflow-y: auto; }
     .doc-nav { font-size: 12px; color: #64748b; margin-bottom: 20px; }
     .doc-title { font-size: 22px; font-weight: 700; color: #0f2d59; margin-bottom: 12px; }
@@ -79,7 +81,19 @@
     </div>
   </div>
 
-  <div class="desk-wrapper" id="userCard">
+  <!-- User PIN Screen -->
+  <div id="userPinAuthView" class="auth-view-screen" style="display: flex;">
+    <div class="pin-box">
+      <div class="pin-title">Internal System Gateway</div>
+      <div class="pin-subtitle">Enter 4-Digit Employee Verification PIN</div>
+      <input type="password" id="userPinInput" class="pin-input" maxlength="4" placeholder="••••" autocomplete="off" />
+      <button class="pin-btn" onclick="verifyUserPin()">Unlock Workspace</button>
+      <div class="pin-error" id="userPinErrorMsg">Invalid authorization PIN.</div>
+    </div>
+  </div>
+
+  <!-- Employee User View -->
+  <div class="desk-wrapper" id="userCard" style="display: none;">
     <header class="desk-header" id="userHeader">
       <div class="desk-header-brand" id="userLogoBrand">
         <span class="brand-tag">HCLTech</span>
@@ -107,9 +121,10 @@
 
       <div id="ticketView" class="ticket-view">
         <div class="chat-timeline" id="userChatBox"></div>
-        <div class="typing-notice" id="userTypingNotice">Desk operator is typing...</div>
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
-          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." required />
+          <input type="file" id="userPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'user')" />
+          <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()" title="Attach photo">📎</button>
+          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." />
           <button type="submit">Dispatch</button>
         </form>
         <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Acknowledge & Vanish Chat History</button>
@@ -117,7 +132,8 @@
     </main>
   </div>
 
-  <div id="adminPinAuthView">
+  <!-- Admin PIN Screen -->
+  <div id="adminPinAuthView" class="auth-view-screen" style="display: none;">
     <div class="pin-box">
       <div class="pin-title">Console Security Lock</div>
       <div class="pin-subtitle">Enter Tier 2 Operator PIN to unlock</div>
@@ -127,6 +143,7 @@
     </div>
   </div>
 
+  <!-- Operator Admin View -->
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
       <div class="desk-header-brand">
@@ -143,7 +160,6 @@
 
     <main class="portal-body">
       <div class="chat-timeline admin-timeline" id="adminChatBox">Waiting for employee ticket...</div>
-      <div class="typing-notice" id="adminTypingNotice" style="color:#38bdf8;">Employee is typing...</div>
 
       <div class="quick-replies">
         <span class="quick-chip" onclick="setQuickReply('Desk Lead evaluating. Stand by.')">Evaluating</span>
@@ -153,18 +169,22 @@
       </div>
 
       <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..."></textarea>
-      <button class="admin-send-btn" onclick="sendAdminReply()">Transmit Reply to Employee</button>
+      <div class="admin-actions-bar">
+        <input type="file" id="adminPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'admin')" />
+        <button type="button" class="btn-attach" onclick="document.getElementById('adminPhotoInput').click()" style="background:#1e293b !important; color:#38bdf8 !important; border-color:#334155 !important;">📎 Photo</button>
+        <button class="admin-send-btn" onclick="sendAdminReply()">Transmit Reply</button>
+      </div>
     </main>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { getDatabase, ref, set, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
-    // Newly generated Firebase configuration for hcl-portal-v2
     const firebaseConfig = {
       apiKey: "AIzaSyC3-9DL9ZSy0_tRp7gmJ7esnj9SWy83S7M",
       authDomain: "hcl-portal-v2.firebaseapp.com",
+      databaseURL: "https://hcl-portal-v2-default-rtdb.firebaseio.com",
       projectId: "hcl-portal-v2",
       storageBucket: "hcl-portal-v2.firebasestorage.app",
       messagingSenderId: "271546551836",
@@ -172,11 +192,12 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const ticketRef = doc(db, "tickets", "live-ticket");
+    const db = getDatabase(app);
+    const ticketRef = ref(db, "tickets/live-ticket");
     const TTL_MS = 30 * 60 * 1000;
-    const ADMIN_PIN = "0090";
+    const SHARED_PIN = "0090";
 
+    let isUserUnlocked = false;
     let isAdminUnlocked = false;
 
     function getTime() {
@@ -186,42 +207,70 @@
     function enforceView() {
       const isHashAdmin = window.location.hash === "#admin";
       const userCard = document.getElementById("userCard");
-      const pinView = document.getElementById("adminPinAuthView");
+      const userPinView = document.getElementById("userPinAuthView");
+      const adminPinView = document.getElementById("adminPinAuthView");
       const adminView = document.getElementById("adminView");
 
       if (isHashAdmin) {
+        userPinView.style.display = "none";
         userCard.style.display = "none";
         if (isAdminUnlocked) {
-          pinView.style.display = "none";
+          adminPinView.style.display = "none";
           adminView.style.display = "flex";
         } else {
           adminView.style.display = "none";
-          pinView.style.display = "flex";
+          adminPinView.style.display = "flex";
           setTimeout(() => {
-            const input = document.getElementById("pinCodeInput");
-            if (input) input.focus();
+            const el = document.getElementById("pinCodeInput");
+            if (el) el.focus();
           }, 50);
         }
       } else {
-        if (pinView) pinView.style.display = "none";
-        if (adminView) adminView.style.display = "none";
-        if (userCard) userCard.style.display = "flex";
+        adminPinView.style.display = "none";
+        adminView.style.display = "none";
+        if (isUserUnlocked) {
+          userPinView.style.display = "none";
+          userCard.style.display = "flex";
+        } else {
+          userCard.style.display = "none";
+          userPinView.style.display = "flex";
+          setTimeout(() => {
+            const el = document.getElementById("userPinInput");
+            if (el) el.focus();
+          }, 50);
+        }
       }
     }
 
-    window.verifyPin = function() {
-      const input = document.getElementById("pinCodeInput");
-      const err = document.getElementById("pinErrorMsg");
-      if (input.value.trim() === ADMIN_PIN) {
-        isAdminUnlocked = true;
+    window.verifyUserPin = function() {
+      const input = document.getElementById("userPinInput");
+      const err = document.getElementById("userPinErrorMsg");
+      if (input.value.trim() === SHARED_PIN) {
+        isUserUnlocked = true;
         err.style.display = "none";
-        document.getElementById("adminPinAuthView").style.display = "none";
-        document.getElementById("adminView").style.display = "flex";
+        enforceView();
       } else {
         err.style.display = "block";
         input.value = "";
       }
     };
+
+    window.verifyPin = function() {
+      const input = document.getElementById("pinCodeInput");
+      const err = document.getElementById("pinErrorMsg");
+      if (input.value.trim() === SHARED_PIN) {
+        isAdminUnlocked = true;
+        err.style.display = "none";
+        enforceView();
+      } else {
+        err.style.display = "block";
+        input.value = "";
+      }
+    };
+
+    document.getElementById("userPinInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") verifyUserPin();
+    });
 
     document.getElementById("pinCodeInput").addEventListener("keypress", (e) => {
       if (e.key === "Enter") verifyPin();
@@ -237,12 +286,14 @@
       panicActive = !panicActive;
       const panicEl = document.getElementById("panicScreen");
       const userCard = document.getElementById("userCard");
+      const userPin = document.getElementById("userPinAuthView");
       const adminView = document.getElementById("adminView");
       const pinView = document.getElementById("adminPinAuthView");
 
       if (panicActive) {
         panicEl.style.display = "block";
         userCard.style.display = "none";
+        userPin.style.display = "none";
         adminView.style.display = "none";
         pinView.style.display = "none";
         document.title = "HCLTech Internal Wiki | SOP-8402";
@@ -274,7 +325,7 @@
 
     window.clearAllMessages = async function() {
       try {
-        await deleteDoc(ticketRef);
+        await remove(ticketRef);
       } catch (err) {
         console.error(err);
       }
@@ -299,47 +350,101 @@
       return empName || 'You';
     }
 
-    // Single unified listener to prevent recursive snapshot loops
-    onSnapshot(ticketRef, (docSnap) => {
+    // Helper: compress image file to Base64 to save data bandwidth
+    function compressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    window.handleImageUpload = function(event, role) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      compressImage(file, async (base64Img) => {
+        const snap = await get(ticketRef);
+        if (snap.exists()) {
+          const data = snap.val();
+          const list = data.messages || [];
+          list.push({
+            sender: role,
+            text: '',
+            image: base64Img,
+            time: getTime()
+          });
+          await update(ticketRef, { messages: list });
+        }
+        event.target.value = "";
+      });
+    };
+
+    onValue(ticketRef, (snapshot) => {
       const userBox = document.getElementById("userChatBox");
       const adminBox = document.getElementById("adminChatBox");
+      const data = snapshot.val();
 
-      if (!docSnap.exists()) {
+      if (!data) {
         resetToForm();
         if (adminBox) adminBox.innerHTML = `<span style="color:#64748b; font-size:12px;">Queue idle. No active messages.</span>`;
         return;
       }
 
-      const data = docSnap.data();
-
-      // Client-side auto-purge check (no repeating background write loop)
       if (data.createdAt && (Date.now() - data.createdAt >= TTL_MS)) {
         clearAllMessages();
         return;
       }
 
       if (data.messages && data.messages.length > 0) {
-        // Render Employee View
+        const buildEntry = (m) => `
+          <div class="chat-entry ${m.sender}">
+            <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
+            <div class="chat-bubble">
+              ${m.text ? `<div>${m.text}</div>` : ''}
+              ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
+            </div>
+          </div>
+        `;
+
         if (userBox) {
           document.getElementById("leanForm").style.display = "none";
           document.getElementById("ticketView").style.display = "flex";
           userBox.innerHTML = data.messages.map(m => `
             <div class="chat-entry ${m.sender}">
               <span class="chat-sender-info">${renderSenderLabel(m.sender, data.name)} • ${m.time}</span>
-              <div class="chat-bubble">${m.text}</div>
+              <div class="chat-bubble">
+                ${m.text ? `<div>${m.text}</div>` : ''}
+                ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
+              </div>
             </div>
           `).join('');
           userBox.scrollTop = userBox.scrollHeight;
         }
 
-        // Render Admin View
         if (adminBox) {
-          adminBox.innerHTML = data.messages.map(m => `
-            <div class="chat-entry ${m.sender}">
-              <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator (You)' : (m.sender === 'system' ? 'System Automated' : (data.name || 'Employee'))} • ${m.time}</span>
-              <div class="chat-bubble">${m.text}</div>
-            </div>
-          `).join('');
+          adminBox.innerHTML = data.messages.map(buildEntry).join('');
           adminBox.scrollTop = adminBox.scrollHeight;
         }
       }
@@ -351,12 +456,11 @@
       const initialIdea = document.getElementById("leanIdea").value;
       const empName = document.getElementById("empName").value;
 
-      await setDoc(ticketRef, {
+      await set(ticketRef, {
         name: empName,
         id: document.getElementById("empId").value,
         idea: initialIdea,
         createdAt: Date.now(),
-        autoGreeted: true,
         messages: [
           { sender: 'user', text: `${initialIdea}: ${initialText}`, time: getTime() },
           { 
@@ -375,12 +479,12 @@
       if (!text) return;
       input.value = "";
 
-      const snap = await getDoc(ticketRef);
+      const snap = await get(ticketRef);
       if (snap.exists()) {
-        const data = snap.data();
+        const data = snap.val();
         const list = data.messages || [];
         list.push({ sender: 'user', text: text, time: getTime() });
-        await updateDoc(ticketRef, { messages: list });
+        await update(ticketRef, { messages: list });
       }
     };
 
@@ -390,12 +494,12 @@
       if (!text) return;
       input.value = "";
 
-      const snap = await getDoc(ticketRef);
+      const snap = await get(ticketRef);
       if (snap.exists()) {
-        const data = snap.data();
+        const data = snap.val();
         const list = data.messages || [];
         list.push({ sender: 'admin', text: text, time: getTime() });
-        await updateDoc(ticketRef, { messages: list });
+        await update(ticketRef, { messages: list });
       }
     };
   </script>
