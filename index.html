@@ -32,13 +32,23 @@
     .chat-entry.system { align-self: flex-start; align-items: flex-start; }
     .chat-sender-info { font-size: 10px; color: #64748b; margin-bottom: 2px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .receipt-tick { font-size: 11px; font-weight: 700; }
-    .receipt-seen { color: #0284c7; }
+    .receipt-seen { color: #38bdf8; }
     .receipt-delivered { color: #94a3b8; }
     .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-wrap: break-word; position: relative; }
     .chat-bubble img { max-width: 100%; max-height: 240px; border-radius: 4px; display: block; margin-top: 4px; }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
     .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
+    
+    /* Instagram Link Cards */
+    .ig-link-card { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0; padding: 7px 11px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; word-break: break-all; transition: background 0.2s; }
+    .user .ig-link-card { background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.35); }
+    .user .ig-link-card:hover { background: rgba(255, 255, 255, 0.28); }
+    .admin .ig-link-card { background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
+    .admin .ig-link-card:hover { background: #fce7f3; }
+    .admin-timeline .admin .ig-link-card { background: #2a1b2d; color: #f472b6; border: 1px solid #4a1d42; }
+    .chat-bubble a.general-link { color: inherit; text-decoration: underline; word-break: break-all; }
+    
     .msg-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 4px; font-size: 10px; opacity: 0.85; }
     .btn-edit-msg { background: transparent; border: none; color: inherit; cursor: pointer; text-decoration: underline; font-size: 10px; padding: 0 2px; opacity: 0.75; }
     .btn-edit-msg:hover { opacity: 1; }
@@ -131,7 +141,7 @@
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
           <input type="file" id="userPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'user')" />
           <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()" title="Attach photo">📎</button>
-          <input type="text" id="userReplyInput" placeholder="Send follow-up message..." />
+          <input type="text" id="userReplyInput" placeholder="Send follow-up or Instagram link..." />
           <button type="submit">Dispatch</button>
         </form>
         <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Acknowledge & Vanish Chat History</button>
@@ -175,7 +185,7 @@
         <span class="quick-chip vanish-chip" onclick="clearAllMessages()">⌧ Vanish</span>
       </div>
 
-      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response..."></textarea>
+      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response or paste link..."></textarea>
       <div class="admin-actions-bar">
         <input type="file" id="adminPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'admin')" />
         <button type="button" class="btn-attach" onclick="document.getElementById('adminPhotoInput').click()" style="background:#1e293b !important; color:#38bdf8 !important; border-color:#334155 !important;">📎 Photo</button>
@@ -221,10 +231,22 @@
       return (Date.now() - refTime) >= TTL_MS;
     }
 
+    // Parses text and converts Instagram & generic links into clickable components
+    function formatMessageText(raw) {
+      if (!raw) return '';
+      const urlPattern = /(https?:\/\/[^\s]+)/g;
+      return raw.replace(urlPattern, (url) => {
+        const isInstagram = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/[^\s]+/i.test(url);
+        if (isInstagram) {
+          return `<br><a href="${url}" target="_blank" rel="noopener noreferrer" class="ig-link-card">📷 <span>View Instagram Post / Profile ↗</span></a><br>`;
+        }
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="general-link">${url}</a>`;
+      });
+    }
+
     async function evaluateSeenReceipts(data) {
       if (!data || !data.messages) return;
       const isCurrentAdmin = window.location.hash === "#admin";
-      const viewerRole = isCurrentAdmin ? 'admin' : 'user';
       const targetRole = isCurrentAdmin ? 'user' : 'admin';
 
       let needsUpdate = false;
@@ -269,6 +291,7 @@
           : '';
 
         const editedTag = m.isEdited ? `<span class="edited-indicator">(edited)</span>` : '';
+        const parsedBody = formatMessageText(m.text);
 
         return `
           <div class="chat-entry ${m.sender}">
@@ -276,7 +299,7 @@
               ${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}
             </span>
             <div class="chat-bubble">
-              ${m.text ? `<div id="msgText_${index}">${m.text}</div>` : ''}
+              ${parsedBody ? `<div>${parsedBody}</div>` : ''}
               ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
               <div class="msg-footer">
                 ${editedTag}
@@ -304,7 +327,7 @@
     window.editMessage = async function(index) {
       if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
       const originalText = currentTicketData.messages[index].text || "";
-      const updatedText = prompt("Edit your message:", originalText);
+      const updatedText = prompt("Edit your message or Instagram URL:", originalText);
 
       if (updatedText !== null && updatedText.trim() !== "" && updatedText.trim() !== originalText) {
         const snap = await get(ticketRef);
@@ -443,7 +466,6 @@
         document.title = "HCLTech Intranet | Confluence";
       } else {
         if (!panicActive) document.title = "HCLTech Enterprise Service Management";
-        // Immediate check upon returning to tab
         if (currentTicketData && isExpired(currentTicketData)) {
           clearAllMessages();
         } else if (currentTicketData) {
@@ -555,7 +577,6 @@
         return;
       }
 
-      // Strict purge check on data receipt
       if (isExpired(data)) {
         clearAllMessages();
         return;
@@ -578,7 +599,7 @@
       console.error("Firebase RTDB sync error:", error);
     });
 
-    // 3-second heartbeat to guarantee deletion exactly at 30 minutes
+    // Active heartbeat check for the 30-minute purge
     setInterval(async () => {
       if (currentTicketData && isExpired(currentTicketData)) {
         await clearAllMessages();
