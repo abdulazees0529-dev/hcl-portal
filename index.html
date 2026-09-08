@@ -6,24 +6,22 @@
   <title>HCLTech Enterprise Service Management</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: #1e293b; overflow-x: hidden; }
+    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; color: #1e293b; overflow-x: hidden; }
     .desk-wrapper { display: flex; flex-direction: column; width: 100vw; min-height: 100vh; background: #ffffff; }
-    .desk-header { background: #0f2d59; color: #ffffff; padding: 12px 16px; border-bottom: 3px solid #0284c7; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; user-select: none; }
+    .desk-header { background: #0f2d59; color: #fff; padding: 12px 16px; border-bottom: 3px solid #0284c7; display: flex; justify-content: space-between; align-items: center; }
     .desk-header-brand { display: flex; align-items: center; gap: 8px; cursor: pointer; }
     .brand-tag { background: #0284c7; color: white; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
     .desk-title { font-size: 14px; font-weight: 600; }
     .status-pill { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 12px; background: #ecfdf5; color: #065f46; display: flex; align-items: center; gap: 5px; }
     .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
-    .ticket-meta-strip { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 16px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; flex-shrink: 0; }
+    .ticket-meta-strip { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 16px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; }
     .portal-body { flex: 1; display: flex; flex-direction: column; padding: 16px; max-width: 720px; width: 100%; margin: 0 auto; padding-bottom: 80px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
     .form-group { margin-bottom: 12px; }
     label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
-    input[type="text"], input[type="password"], textarea { width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #0f172a; font-family: inherit; }
-    input[type="text"]:focus, input[type="password"]:focus, textarea:focus { outline: none; border-color: #0284c7; }
-    textarea { resize: vertical; min-height: 85px; }
+    input[type="text"], input[type="password"], textarea { width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #0f172a; font-family: inherit; }
+    textarea { resize: vertical; min-height: 80px; }
     .btn-submit { background: #0284c7; color: #fff; border: none; width: 100%; padding: 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
-    .btn-submit:hover { background: #0369a1; }
     .ticket-view { display: none; flex-direction: column; flex: 1; }
     .chat-timeline { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; min-height: 240px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
     .chat-entry { display: flex; flex-direction: column; max-width: 85%; }
@@ -34,28 +32,26 @@
     .receipt-tick { font-size: 11px; font-weight: 700; }
     .receipt-seen { color: #38bdf8; }
     .receipt-delivered { color: #94a3b8; }
-    .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-wrap: break-word; position: relative; }
+    .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; word-wrap: break-word; position: relative; }
     .chat-bubble img { max-width: 100%; max-height: 240px; border-radius: 4px; display: block; margin-top: 4px; cursor: pointer; }
-    .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
-    .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
-    .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
-    .ig-link-card { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0; padding: 7px 11px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; word-break: break-all; }
-    .user .ig-link-card { background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.35); }
+    .user .chat-bubble { background: #0284c7; color: #fff; border-bottom-right-radius: 1px; }
+    .admin .chat-bubble { background: #fff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
+    .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; }
+    .ig-link-card { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; word-break: break-all; }
+    .user .ig-link-card { background: rgba(255, 255, 255, 0.2); color: #fff; }
     .admin .ig-link-card { background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
-    .admin-timeline .admin .ig-link-card { background: #2a1b2d; color: #f472b6; border: 1px solid #4a1d42; }
-    .chat-bubble a.general-link { color: inherit; text-decoration: underline; word-break: break-all; }
-    .typing-bar { min-height: 18px; font-size: 11px; font-style: italic; color: #0284c7; margin-bottom: 4px; padding-left: 4px; }
-    .admin-typing { color: #38bdf8; }
+    .typing-bar { min-height: 16px; font-size: 11px; font-style: italic; color: #0284c7; margin-bottom: 4px; padding-left: 4px; }
     .msg-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 4px; font-size: 10px; opacity: 0.85; }
-    .btn-edit-msg { background: transparent; border: none; color: inherit; cursor: pointer; text-decoration: underline; font-size: 10px; padding: 0 2px; opacity: 0.75; }
-    .edited-indicator { font-style: italic; font-size: 9px; margin-right: 2px; }
-    .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; position: relative; z-index: 10; align-items: center; }
+    .btn-edit-msg { background: transparent; border: none; color: inherit; cursor: pointer; text-decoration: underline; font-size: 10px; opacity: 0.75; }
+    .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; align-items: center; }
     .chat-input-bar input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
     .chat-input-bar button { background: #0f2d59; color: white; border: none; padding: 0 16px; height: 38px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
-    .btn-attach { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #475569 !important; font-size: 16px !important; padding: 0 12px !important; cursor: pointer; }
-    .btn-vanish { width: 100%; background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .btn-attach { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #475569 !important; font-size: 16px !important; padding: 0 12px !important; }
+    .btn-call { background: #059669 !important; color: white !important; font-size: 13px !important; }
+    .btn-call-admin { background: #059669; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-vanish { width: 100%; background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
     .auth-view-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; padding: 24px; background: #0b1120; }
-    .pin-box { background: #1e293b; border: 1px solid #334155; padding: 28px 24px; border-radius: 8px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .pin-box { background: #1e293b; border: 1px solid #334155; padding: 28px 24px; border-radius: 8px; width: 100%; max-width: 340px; text-align: center; }
     .pin-title { color: #f8fafc; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
     .pin-subtitle { color: #94a3b8; font-size: 12px; margin-bottom: 18px; }
     .pin-input { letter-spacing: 6px; font-size: 20px; text-align: center; margin-bottom: 14px; background: #0f172a !important; color: #38bdf8 !important; border-color: #475569 !important; }
@@ -66,28 +62,42 @@
     .admin-timeline { background: #0b1120; border-color: #1e293b; }
     .admin-timeline .admin .chat-bubble { background: #1e293b; color: #f8fafc; border-color: #334155; }
     .admin-timeline .system .chat-bubble { background: #162238; color: #94a3b8; border-color: #0284c7; }
-    .admin-timeline .user .chat-bubble { background: #0284c7; color: #ffffff; }
-    .admin-textbox { background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; width: 100%; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 4px; }
+    .admin-timeline .user .chat-bubble { background: #0284c7; color: #fff; }
+    .admin-textbox { background: #fff; color: #0f172a; border: 1px solid #cbd5e1; width: 100%; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 4px; }
     .quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
     .quick-chip { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; }
     .vanish-chip { background: #271e24; color: #f87171; border: 1px dashed #7f1d1d; }
     .admin-actions-bar { display: flex; gap: 6px; margin-bottom: 6px; }
     .admin-send-btn { background: #0284c7; color: white; border: none; font-weight: 600; flex: 1; padding: 11px; border-radius: 6px; cursor: pointer; }
-    #panicScreen { display: none; background: #ffffff; color: #1e293b; padding: 30px; height: 100vh; width: 100vw; box-sizing: border-box; overflow-y: auto; }
-    .doc-nav { font-size: 12px; color: #64748b; margin-bottom: 20px; }
-    .doc-title { font-size: 22px; font-weight: 700; color: #0f2d59; margin-bottom: 12px; }
-    .doc-body p { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: #334155; }
-    #lightboxModal { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
-    #lightboxImage { max-width: 96vw; max-height: 92vh; border-radius: 6px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7); object-fit: contain; }
+    #panicScreen { display: none; background: #fff; color: #1e293b; padding: 30px; height: 100vh; width: 100vw; overflow-y: auto; }
+    #lightboxModal { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.88); align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+    #lightboxImage { max-width: 96vw; max-height: 92vh; border-radius: 6px; object-fit: contain; }
+    #videoCallModal { display: none; position: fixed; z-index: 9998; top: 0; left: 0; width: 100vw; height: 100vh; background: #020617; flex-direction: column; }
+    .video-viewport { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; }
+    #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
+    #localVideo { position: absolute; top: 16px; right: 16px; width: 90px; height: 130px; object-fit: cover; border-radius: 6px; border: 2px solid #38bdf8; z-index: 10; background: #1e293b; }
+    .call-controls { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; background: #0f172a; }
+    .btn-end-call { background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; }
     @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } .portal-body { padding: 12px; padding-bottom: 90px; } }
   </style>
 </head>
 <body>
+  <div id="videoCallModal">
+    <div class="video-viewport">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo" autoplay playsinline muted></video>
+    </div>
+    <div class="call-controls">
+      <button class="btn-end-call" onclick="endCall()">End Video Call</button>
+    </div>
+  </div>
+
   <div id="lightboxModal" onclick="closeLightbox()"><img id="lightboxImage" src="" alt="Expanded Preview" /></div>
+
   <div id="panicScreen">
-    <div class="doc-nav">Confluence / Engineering Wiki / CI Standards</div>
-    <h1 class="doc-title">Operating Procedures (SOP-8402)</h1>
-    <div class="doc-body"><p>Agile Transformation Framework documentation.</p></div>
+    <div style="font-size:12px; color:#64748b; margin-bottom:20px;">Confluence / Engineering Wiki / CI Standards</div>
+    <h1 style="font-size:22px; font-weight:700; color:#0f2d59; margin-bottom:12px;">Operating Procedures (SOP-8402)</h1>
+    <p style="font-size:13px; line-height:1.6; color:#334155;">Agile Transformation Framework documentation. Press [ESC twice] to exit.</p>
   </div>
 
   <div id="userPinAuthView" class="auth-view-screen" style="display: flex;">
@@ -103,9 +113,9 @@
   <div class="desk-wrapper" id="userCard" style="display: none;">
     <header class="desk-header">
       <div class="desk-header-brand" id="userLogoBrand"><span class="brand-tag">HCLTech</span><span class="desk-title">Service Desk</span></div>
-      <div class="status-pill"><span class="status-dot"></span> System Connected</div>
+      <div class="status-pill"><span class="status-dot"></span> Connected</div>
     </header>
-    <div class="ticket-meta-strip"><span>Continuous Improvement Queue</span><span>30s Idle Lock • 30m Auto-Purge</span></div>
+    <div class="ticket-meta-strip"><span>Queue: <strong>Continuous Improvement</strong></span><span>Policy: <strong>30s Idle • 30m Purge</strong></span></div>
     <main class="portal-body">
       <form id="leanForm" onsubmit="submitProposal(event)">
         <div class="form-grid">
@@ -123,7 +133,8 @@
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
           <input type="file" id="userPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'user')" />
           <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()">📎</button>
-          <input type="text" id="userReplyInput" placeholder="Send reply or Instagram link..." oninput="handleTyping('user')" />
+          <button type="button" class="btn-attach btn-call" onclick="startCall('user')">📹</button>
+          <input type="text" id="userReplyInput" placeholder="Send reply or link..." oninput="handleTyping('user')" />
           <button type="submit">Dispatch</button>
         </form>
         <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Vanish Session History</button>
@@ -144,12 +155,12 @@
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
       <div class="desk-header-brand"><span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span><span class="desk-title">Tier 2 Service Console</span></div>
-      <div class="status-pill" style="background:#1e293b; color:#38bdf8;">Live Console</div>
+      <button type="button" class="btn-call-admin" onclick="startCall('admin')">📹 Video Call</button>
     </header>
-    <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;"><span>Workspace Live</span><span>Strict 30m Auto-Purge Active</span></div>
+    <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;"><span>Workspace Live</span><span>Strict 30m Auto-Purge</span></div>
     <main class="portal-body">
       <div class="chat-timeline admin-timeline" id="adminChatBox">Connecting...</div>
-      <div class="typing-bar admin-typing" id="adminTypingIndicator"></div>
+      <div class="typing-bar" style="color:#38bdf8;" id="adminTypingIndicator"></div>
       <div class="quick-replies">
         <span class="quick-chip" onclick="setQuickReply('Desk Lead evaluating. Stand by.')">Evaluating</span>
         <span class="quick-chip" onclick="setQuickReply('Logged for sprint.')">Logged</span>
@@ -167,7 +178,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, get, update, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
     const DB_LOCATION = "https://hcl-portal-61844-default-rtdb.asia-southeast1.firebasedatabase.app/";
     const firebaseConfig = {
@@ -184,6 +195,7 @@
     const db = getDatabase(app, DB_LOCATION);
     const ticketRef = ref(db, "tickets/live-ticket");
     const typingRef = ref(db, "tickets/live-ticket/typing");
+    const callRef = ref(db, "tickets/live-ticket/call");
 
     const TTL_MS = 30 * 60 * 1000;
     const IDLE_LIMIT_MS = 30 * 1000;
@@ -194,9 +206,84 @@
     let currentTicketData = null;
     let lastInteractionTime = Date.now();
     let typingTimer = null;
+    let pc = null;
+    let localStream = null;
+    const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    window.openLightbox = function(imgSrc) {
-      document.getElementById("lightboxImage").src = imgSrc;
+    async function initMedia() {
+      if (!localStream) {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+      }
+      return localStream;
+    }
+
+    function createPeer() {
+      pc = new RTCPeerConnection(rtcConfig);
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+      pc.ontrack = (e) => { document.getElementById('remoteVideo').srcObject = e.streams[0]; };
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          const role = (window.location.hash === "#admin") ? 'admin' : 'user';
+          set(ref(db, `tickets/live-ticket/call/candidates/${role}_${Date.now()}`), e.candidate.toJSON());
+        }
+      };
+      return pc;
+    }
+
+    window.startCall = async function(role) {
+      recordActivity();
+      try {
+        await initMedia();
+        document.getElementById('videoCallModal').style.display = 'flex';
+        const peer = createPeer();
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        await set(callRef, { caller: role, active: true, offer: { type: offer.type, sdp: offer.sdp } });
+      } catch (err) {
+        alert("Camera/Microphone error: " + err.message);
+      }
+    };
+
+    window.endCall = async function() {
+      recordActivity();
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+      if (pc) { pc.close(); pc = null; }
+      document.getElementById('videoCallModal').style.display = 'none';
+      try { await remove(callRef); } catch (e) {}
+    };
+
+    onValue(callRef, async (snap) => {
+      const callData = snap.val();
+      const currentRole = (window.location.hash === "#admin") ? 'admin' : 'user';
+      if (!callData || !callData.active) {
+        if (document.getElementById('videoCallModal').style.display === 'flex') endCall();
+        return;
+      }
+      if (callData.caller !== currentRole && callData.offer && !pc) {
+        if (confirm(`Incoming call from ${callData.caller === 'admin' ? 'Desk Lead' : 'Employee'}. Accept?`)) {
+          await initMedia();
+          document.getElementById('videoCallModal').style.display = 'flex';
+          const peer = createPeer();
+          await peer.setRemoteDescription(new RTCSessionDescription(callData.offer));
+          const answer = await peer.createAnswer();
+          await peer.setLocalDescription(answer);
+          await update(callRef, { answer: { type: answer.type, sdp: answer.sdp } });
+        } else {
+          endCall();
+        }
+      }
+      if (callData.caller === currentRole && callData.answer && pc && !pc.currentRemoteDescription) {
+        await pc.setRemoteDescription(new RTCSessionDescription(callData.answer));
+      }
+    });
+
+    onChildAdded(ref(db, "tickets/live-ticket/call/candidates"), (snap) => {
+      if (pc && snap.val()) pc.addIceCandidate(new RTCIceCandidate(snap.val())).catch(() => {});
+    });
+
+    window.openLightbox = function(src) {
+      document.getElementById("lightboxImage").src = src;
       document.getElementById("lightboxModal").style.display = "flex";
     };
 
@@ -204,43 +291,33 @@
       document.getElementById("lightboxModal").style.display = "none";
     };
 
-    function recordActivity() {
-      lastInteractionTime = Date.now();
-    }
-
-    ['mousedown', 'mousemove', 'keypress', 'touchstart', 'scroll', 'click'].forEach(evt => {
-      window.addEventListener(evt, recordActivity, { passive: true });
+    function recordActivity() { lastInteractionTime = Date.now(); }
+    ['mousedown', 'mousemove', 'keypress', 'touchstart', 'scroll', 'click'].forEach(e => {
+      window.addEventListener(e, recordActivity, { passive: true });
     });
 
     setInterval(() => {
-      const now = Date.now();
-      if ((isUserUnlocked || isAdminUnlocked) && (now - lastInteractionTime >= IDLE_LIMIT_MS)) {
+      if ((isUserUnlocked || isAdminUnlocked) && (Date.now() - lastInteractionTime >= IDLE_LIMIT_MS)) {
         isUserUnlocked = false;
         isAdminUnlocked = false;
         document.getElementById("userPinInput").value = "";
         document.getElementById("pinCodeInput").value = "";
         closeLightbox();
+        if (document.getElementById('videoCallModal').style.display === 'flex') endCall();
         enforceView();
       }
     }, 1000);
 
-    function getTime() {
-      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function isExpired(data) {
-      if (!data || !data.createdAt) return false;
-      return (Date.now() - data.createdAt) >= TTL_MS;
-    }
+    function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+    function isExpired(data) { return (data && data.createdAt) ? ((Date.now() - data.createdAt) >= TTL_MS) : false; }
 
     function formatMessageText(raw) {
       if (!raw) return '';
-      const urlPattern = /(https?:\/\/[^\s]+)/g;
-      return raw.replace(urlPattern, (url) => {
+      return raw.replace(/(https?:\/\/[^\s]+)/g, (url) => {
         if (/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/[^\s]+/i.test(url)) {
           return `<br><a href="${url}" target="_blank" rel="noopener noreferrer" class="ig-link-card">📷 <span>View Instagram ↗</span></a><br>`;
         }
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="general-link">${url}</a>`;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline;">${url}</a>`;
       });
     }
 
@@ -248,37 +325,30 @@
       recordActivity();
       update(typingRef, { [role]: true });
       clearTimeout(typingTimer);
-      typingTimer = setTimeout(() => {
-        update(typingRef, { [role]: false });
-      }, 1500);
+      typingTimer = setTimeout(() => update(typingRef, { [role]: false }), 1500);
     };
 
     onValue(typingRef, (snapshot) => {
       const val = snapshot.val() || {};
-      const uInd = document.getElementById("userTypingIndicator");
-      const aInd = document.getElementById("adminTypingIndicator");
-      if (uInd) uInd.innerText = val.admin ? "Desk Lead is typing..." : "";
-      if (aInd) aInd.innerText = val.user ? "Employee is typing..." : "";
+      const u = document.getElementById("userTypingIndicator");
+      const a = document.getElementById("adminTypingIndicator");
+      if (u) u.innerText = val.admin ? "Desk Lead is typing..." : "";
+      if (a) a.innerText = val.user ? "Employee is typing..." : "";
     });
 
     async function evaluateSeenReceipts(data) {
       if (!data || !data.messages) return;
-      const isCurrentAdmin = window.location.hash === "#admin";
-      const targetRole = isCurrentAdmin ? 'user' : 'admin';
+      const targetRole = (window.location.hash === "#admin") ? 'user' : 'admin';
       let needsUpdate = false;
       const updatedMessages = data.messages.map(m => {
-        if (m.sender === targetRole && m.status !== 'seen') {
-          needsUpdate = true;
-          return { ...m, status: 'seen' };
-        }
+        if (m.sender === targetRole && m.status !== 'seen') { needsUpdate = true; return { ...m, status: 'seen' }; }
         return m;
       });
       if (needsUpdate) await update(ticketRef, { messages: updatedMessages });
     }
 
     function renderMessages() {
-      const isHashAdmin = window.location.hash === "#admin";
-      const currentRole = isHashAdmin ? 'admin' : 'user';
+      const currentRole = (window.location.hash === "#admin") ? 'admin' : 'user';
       const userBox = document.getElementById("userChatBox");
       const adminBox = document.getElementById("adminChatBox");
 
@@ -297,7 +367,7 @@
           ? (m.status === 'seen' ? `<span class="receipt-tick receipt-seen">✓✓</span>` : `<span class="receipt-tick receipt-delivered">✓</span>`)
           : '';
         const editButton = (isMyMsg && m.text) ? `<button class="btn-edit-msg" onclick="editMessage(${index})">Edit</button>` : '';
-        const editedTag = m.isEdited ? `<span class="edited-indicator">(edited)</span>` : '';
+        const editedTag = m.isEdited ? `<span style="font-style:italic; font-size:9px; margin-right:2px;">(edited)</span>` : '';
 
         return `
           <div class="chat-entry ${m.sender}">
@@ -319,7 +389,7 @@
     window.editMessage = async function(index) {
       recordActivity();
       if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
-      const updatedText = prompt("Edit your message:", currentTicketData.messages[index].text || "");
+      const updatedText = prompt("Edit message:", currentTicketData.messages[index].text || "");
       if (updatedText !== null && updatedText.trim() !== "") {
         const snap = await get(ticketRef);
         if (snap.exists()) {
@@ -397,7 +467,7 @@
     function togglePanic() {
       panicActive = !panicActive;
       document.getElementById("panicScreen").style.display = panicActive ? "block" : "none";
-      if (!panicActive) enforceView();
+      if (panicActive) { endCall(); closeLightbox(); } else { enforceView(); }
     }
 
     window.addEventListener("keydown", (e) => {
@@ -411,6 +481,7 @@
     document.getElementById("userLogoBrand").addEventListener("dblclick", togglePanic);
 
     window.clearAllMessages = async function() {
+      endCall();
       try { await remove(ticketRef); } catch (err) { console.error(err); }
       currentTicketData = null;
       if (window.location.hash !== "#admin") {
@@ -486,12 +557,11 @@
       recordActivity();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
-      const now = Date.now();
       await set(ticketRef, {
         name: document.getElementById("empName").value,
         id: document.getElementById("empId").value,
         idea: initialIdea,
-        createdAt: now,
+        createdAt: Date.now(),
         messages: [
           { sender: 'user', text: `${initialIdea}: ${initialText}`, status: 'delivered', time: getTime() },
           { sender: 'system', text: `Continuous Improvement Desk session assigned.`, status: 'seen', time: getTime() }
