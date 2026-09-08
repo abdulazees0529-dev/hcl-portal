@@ -25,7 +25,7 @@
     .btn-submit { background: #0284c7; color: #fff; border: none; width: 100%; padding: 12px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
     .btn-submit:hover { background: #0369a1; }
     .ticket-view { display: none; flex-direction: column; flex: 1; }
-    .chat-timeline { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; min-height: 240px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+    .chat-timeline { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; min-height: 240px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
     .chat-entry { display: flex; flex-direction: column; max-width: 85%; }
     .chat-entry.user { align-self: flex-end; align-items: flex-end; }
     .chat-entry.admin { align-self: flex-start; align-items: flex-start; }
@@ -35,36 +35,31 @@
     .receipt-seen { color: #38bdf8; }
     .receipt-delivered { color: #94a3b8; }
     .chat-bubble { padding: 9px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-wrap: break-word; position: relative; }
-    .chat-bubble img { max-width: 100%; max-height: 240px; border-radius: 4px; display: block; margin-top: 4px; }
+    .chat-bubble img { max-width: 100%; max-height: 240px; border-radius: 4px; display: block; margin-top: 4px; cursor: pointer; }
     .user .chat-bubble { background: #0284c7; color: #ffffff; border-bottom-right-radius: 1px; }
     .admin .chat-bubble { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 1px; }
     .system .chat-bubble { background: #f1f5f9; color: #334155; border-left: 3px solid #0284c7; border-bottom-left-radius: 1px; }
-    
-    .ig-link-card { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0; padding: 7px 11px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; word-break: break-all; transition: background 0.2s; }
+    .ig-link-card { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0; padding: 7px 11px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; word-break: break-all; }
     .user .ig-link-card { background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.35); }
-    .user .ig-link-card:hover { background: rgba(255, 255, 255, 0.28); }
     .admin .ig-link-card { background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
-    .admin .ig-link-card:hover { background: #fce7f3; }
     .admin-timeline .admin .ig-link-card { background: #2a1b2d; color: #f472b6; border: 1px solid #4a1d42; }
     .chat-bubble a.general-link { color: inherit; text-decoration: underline; word-break: break-all; }
-    
+    .typing-bar { min-height: 18px; font-size: 11px; font-style: italic; color: #0284c7; margin-bottom: 4px; padding-left: 4px; }
+    .admin-typing { color: #38bdf8; }
     .msg-footer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 4px; font-size: 10px; opacity: 0.85; }
     .btn-edit-msg { background: transparent; border: none; color: inherit; cursor: pointer; text-decoration: underline; font-size: 10px; padding: 0 2px; opacity: 0.75; }
-    .btn-edit-msg:hover { opacity: 1; }
     .edited-indicator { font-style: italic; font-size: 9px; margin-right: 2px; }
     .chat-input-bar { display: flex; gap: 6px; margin-bottom: 10px; position: relative; z-index: 10; align-items: center; }
     .chat-input-bar input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; }
     .chat-input-bar button { background: #0f2d59; color: white; border: none; padding: 0 16px; height: 38px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
     .btn-attach { background: #f1f5f9 !important; border: 1px solid #cbd5e1 !important; color: #475569 !important; font-size: 16px !important; padding: 0 12px !important; cursor: pointer; }
     .btn-vanish { width: 100%; background: #f8fafc; color: #64748b; border: 1px dashed #cbd5e1; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .btn-vanish:hover { background: #f1f5f9; color: #334155; }
     .auth-view-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; padding: 24px; background: #0b1120; }
     .pin-box { background: #1e293b; border: 1px solid #334155; padding: 28px 24px; border-radius: 8px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
     .pin-title { color: #f8fafc; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
     .pin-subtitle { color: #94a3b8; font-size: 12px; margin-bottom: 18px; }
     .pin-input { letter-spacing: 6px; font-size: 20px; text-align: center; margin-bottom: 14px; background: #0f172a !important; color: #38bdf8 !important; border-color: #475569 !important; }
     .pin-btn { background: #0284c7; color: white; border: none; width: 100%; padding: 10px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
-    .pin-btn:hover { background: #0369a1; }
     .pin-error { color: #f87171; font-size: 11px; margin-top: 10px; display: none; }
     #adminView { display: none; }
     .admin-header { background: #0f172a; border-bottom-color: #38bdf8; }
@@ -72,122 +67,99 @@
     .admin-timeline .admin .chat-bubble { background: #1e293b; color: #f8fafc; border-color: #334155; }
     .admin-timeline .system .chat-bubble { background: #162238; color: #94a3b8; border-color: #0284c7; }
     .admin-timeline .user .chat-bubble { background: #0284c7; color: #ffffff; }
-    .admin-textbox { background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; width: 100%; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; }
+    .admin-textbox { background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; width: 100%; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 4px; }
     .quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
     .quick-chip { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 5px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; }
-    .quick-chip:hover { color: #f8fafc; border-color: #38bdf8; }
     .vanish-chip { background: #271e24; color: #f87171; border: 1px dashed #7f1d1d; }
-    .vanish-chip:hover { background: #3f1d24; color: #fca5a5; border-color: #ef4444; }
     .admin-actions-bar { display: flex; gap: 6px; margin-bottom: 6px; }
     .admin-send-btn { background: #0284c7; color: white; border: none; font-weight: 600; flex: 1; padding: 11px; border-radius: 6px; cursor: pointer; }
     #panicScreen { display: none; background: #ffffff; color: #1e293b; padding: 30px; height: 100vh; width: 100vw; box-sizing: border-box; overflow-y: auto; }
     .doc-nav { font-size: 12px; color: #64748b; margin-bottom: 20px; }
     .doc-title { font-size: 22px; font-weight: 700; color: #0f2d59; margin-bottom: 12px; }
     .doc-body p { margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: #334155; }
+    #lightboxModal { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+    #lightboxImage { max-width: 96vw; max-height: 92vh; border-radius: 6px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7); object-fit: contain; }
     @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } .portal-body { padding: 12px; padding-bottom: 90px; } }
   </style>
 </head>
 <body>
+  <div id="lightboxModal" onclick="closeLightbox()"><img id="lightboxImage" src="" alt="Expanded Preview" /></div>
   <div id="panicScreen">
-    <div class="doc-nav">Confluence / Internal Engineering Wiki / Architecture Standards / CI Workflow</div>
-    <h1 class="doc-title">Engineering Operating Procedures (SOP-8402)</h1>
-    <div class="doc-body">
-      <p><strong>Overview:</strong> Agile Transformation Framework documentation.</p>
-      <p><em>Press [ESC twice] or tap title to return to your workspace.</em></p>
-    </div>
+    <div class="doc-nav">Confluence / Engineering Wiki / CI Standards</div>
+    <h1 class="doc-title">Operating Procedures (SOP-8402)</h1>
+    <div class="doc-body"><p>Agile Transformation Framework documentation.</p></div>
   </div>
 
-  <!-- User PIN Screen -->
   <div id="userPinAuthView" class="auth-view-screen" style="display: flex;">
     <div class="pin-box">
-      <div class="pin-title">Internal System Gateway</div>
+      <div class="pin-title">Internal Gateway</div>
       <div class="pin-subtitle">Enter 4-Digit Employee Verification PIN</div>
-      <input type="password" id="userPinInput" class="pin-input" maxlength="4" placeholder="••••" autocomplete="off" />
+      <input type="password" id="userPinInput" class="pin-input" maxlength="4" placeholder="••••" />
       <button class="pin-btn" onclick="verifyUserPin()">Unlock Workspace</button>
-      <div class="pin-error" id="userPinErrorMsg">Invalid authorization PIN.</div>
+      <div class="pin-error" id="userPinErrorMsg">Invalid PIN.</div>
     </div>
   </div>
 
-  <!-- Employee User View -->
   <div class="desk-wrapper" id="userCard" style="display: none;">
-    <header class="desk-header" id="userHeader">
-      <div class="desk-header-brand" id="userLogoBrand">
-        <span class="brand-tag">HCLTech</span>
-        <span class="desk-title">Service Desk Portal</span>
-      </div>
+    <header class="desk-header">
+      <div class="desk-header-brand" id="userLogoBrand"><span class="brand-tag">HCLTech</span><span class="desk-title">Service Desk</span></div>
       <div class="status-pill"><span class="status-dot"></span> System Connected</div>
     </header>
-
-    <div class="ticket-meta-strip">
-      <span>Queue: <strong>Continuous Improvement Desk</strong></span>
-      <span>Policy: <strong>Strict 30m Auto-Purge (From Start)</strong></span>
-    </div>
-
+    <div class="ticket-meta-strip"><span>Continuous Improvement Queue</span><span>30s Idle Lock • 30m Auto-Purge</span></div>
     <main class="portal-body">
       <form id="leanForm" onsubmit="submitProposal(event)">
         <div class="form-grid">
-          <div><label>Employee Name</label><input type="text" id="empName" placeholder="Full Name" required /></div>
-          <div><label>Employee ID</label><input type="text" id="empId" placeholder="e.g. 52148903" required /></div>
+          <div><label>Name</label><input type="text" id="empName" required /></div>
+          <div><label>Employee ID</label><input type="text" id="empId" required /></div>
         </div>
-        <div class="form-group"><label>Topic / Initiative Title</label><input type="text" id="leanIdea" placeholder="Brief subject" required /></div>
-        <div class="form-group"><label>Account / Project</label><input type="text" id="projectName" placeholder="Client account name" required /></div>
-        <div class="form-group"><label>Operational Suggestion Details</label><textarea id="suggestion" placeholder="Detailed suggestion description..." required></textarea></div>
-        <button type="submit" class="btn-submit">Log Incident & Open Session</button>
+        <div class="form-group"><label>Initiative</label><input type="text" id="leanIdea" required /></div>
+        <div class="form-group"><label>Account</label><input type="text" id="projectName" required /></div>
+        <div class="form-group"><label>Details</label><textarea id="suggestion" required></textarea></div>
+        <button type="submit" class="btn-submit">Submit Incident</button>
       </form>
-
       <div id="ticketView" class="ticket-view">
         <div class="chat-timeline" id="userChatBox"></div>
+        <div class="typing-bar" id="userTypingIndicator"></div>
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
           <input type="file" id="userPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'user')" />
-          <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()" title="Attach photo">📎</button>
-          <input type="text" id="userReplyInput" placeholder="Send follow-up or Instagram link..." />
+          <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()">📎</button>
+          <input type="text" id="userReplyInput" placeholder="Send reply or Instagram link..." oninput="handleTyping('user')" />
           <button type="submit">Dispatch</button>
         </form>
-        <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Acknowledge & Vanish Chat History</button>
+        <button type="button" class="btn-vanish" onclick="clearAllMessages()">✓ Vanish Session History</button>
       </div>
     </main>
   </div>
 
-  <!-- Admin PIN Screen -->
   <div id="adminPinAuthView" class="auth-view-screen" style="display: none;">
     <div class="pin-box">
       <div class="pin-title">Console Security Lock</div>
-      <div class="pin-subtitle">Enter Tier 2 Operator PIN to unlock</div>
-      <input type="password" id="pinCodeInput" class="pin-input" maxlength="4" placeholder="••••" autocomplete="off" />
+      <div class="pin-subtitle">Enter Tier 2 Operator PIN</div>
+      <input type="password" id="pinCodeInput" class="pin-input" maxlength="4" placeholder="••••" />
       <button class="pin-btn" onclick="verifyPin()">Authenticate</button>
-      <div class="pin-error" id="pinErrorMsg">Invalid authorization PIN.</div>
+      <div class="pin-error" id="pinErrorMsg">Invalid PIN.</div>
     </div>
   </div>
 
-  <!-- Operator Admin View -->
   <div class="desk-wrapper" id="adminView">
     <header class="desk-header admin-header">
-      <div class="desk-header-brand">
-        <span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span>
-        <span class="desk-title">Tier 2 Service Console</span>
-      </div>
+      <div class="desk-header-brand"><span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span><span class="desk-title">Tier 2 Service Console</span></div>
       <div class="status-pill" style="background:#1e293b; color:#38bdf8;">Live Console</div>
     </header>
-
-    <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;">
-      <span>Workspace: <strong>Enterprise Service Management Desk</strong></span>
-      <span>Policy: <strong>Strict 30m Auto-Purge Active</strong></span>
-    </div>
-
+    <div class="ticket-meta-strip" style="background:#090d16; border-color:#1e293b; color:#94a3b8;"><span>Workspace Live</span><span>Strict 30m Auto-Purge Active</span></div>
     <main class="portal-body">
-      <div class="chat-timeline admin-timeline" id="adminChatBox">Connecting to database...</div>
-
+      <div class="chat-timeline admin-timeline" id="adminChatBox">Connecting...</div>
+      <div class="typing-bar admin-typing" id="adminTypingIndicator"></div>
       <div class="quick-replies">
         <span class="quick-chip" onclick="setQuickReply('Desk Lead evaluating. Stand by.')">Evaluating</span>
-        <span class="quick-chip" onclick="setQuickReply('Logged for internal CI sprint.')">Logged</span>
-        <span class="quick-chip" onclick="setQuickReply('Acknowledge. Notes are noted.')">Noted</span>
+        <span class="quick-chip" onclick="setQuickReply('Logged for sprint.')">Logged</span>
+        <span class="quick-chip" onclick="setQuickReply('Notes are noted.')">Noted</span>
         <span class="quick-chip vanish-chip" onclick="clearAllMessages()">⌧ Vanish</span>
       </div>
-
-      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Type desk response or paste link..."></textarea>
+      <textarea class="admin-textbox" id="adminReplyMsg" rows="2" placeholder="Desk response..." oninput="handleTyping('admin')"></textarea>
       <div class="admin-actions-bar">
         <input type="file" id="adminPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'admin')" />
-        <button type="button" class="btn-attach" onclick="document.getElementById('adminPhotoInput').click()" style="background:#1e293b !important; color:#38bdf8 !important; border-color:#334155 !important;">📎 Photo</button>
+        <button type="button" class="btn-attach" onclick="document.getElementById('adminPhotoInput').click()" style="background:#1e293b !important; color:#38bdf8 !important;">📎 Photo</button>
         <button class="admin-send-btn" onclick="sendAdminReply()">Transmit Reply</button>
       </div>
     </main>
@@ -198,7 +170,6 @@
     import { getDatabase, ref, set, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
     const DB_LOCATION = "https://hcl-portal-61844-default-rtdb.asia-southeast1.firebasedatabase.app/";
-
     const firebaseConfig = {
       apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
       authDomain: "hcl-portal-61844.firebaseapp.com",
@@ -212,18 +183,51 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app, DB_LOCATION);
     const ticketRef = ref(db, "tickets/live-ticket");
-    const TTL_MS = 30 * 60 * 1000; // Exact 30 minutes in milliseconds
+    const typingRef = ref(db, "tickets/live-ticket/typing");
+
+    const TTL_MS = 30 * 60 * 1000;
+    const IDLE_LIMIT_MS = 30 * 1000;
     const SHARED_PIN = "0090";
 
     let isUserUnlocked = false;
     let isAdminUnlocked = false;
     let currentTicketData = null;
+    let lastInteractionTime = Date.now();
+    let typingTimer = null;
+
+    window.openLightbox = function(imgSrc) {
+      document.getElementById("lightboxImage").src = imgSrc;
+      document.getElementById("lightboxModal").style.display = "flex";
+    };
+
+    window.closeLightbox = function() {
+      document.getElementById("lightboxModal").style.display = "none";
+    };
+
+    function recordActivity() {
+      lastInteractionTime = Date.now();
+    }
+
+    ['mousedown', 'mousemove', 'keypress', 'touchstart', 'scroll', 'click'].forEach(evt => {
+      window.addEventListener(evt, recordActivity, { passive: true });
+    });
+
+    setInterval(() => {
+      const now = Date.now();
+      if ((isUserUnlocked || isAdminUnlocked) && (now - lastInteractionTime >= IDLE_LIMIT_MS)) {
+        isUserUnlocked = false;
+        isAdminUnlocked = false;
+        document.getElementById("userPinInput").value = "";
+        document.getElementById("pinCodeInput").value = "";
+        closeLightbox();
+        enforceView();
+      }
+    }, 1000);
 
     function getTime() {
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // STRICT 30-MINUTE EXPIRATION: Anchored permanently to ticket creation time
     function isExpired(data) {
       if (!data || !data.createdAt) return false;
       return (Date.now() - data.createdAt) >= TTL_MS;
@@ -233,19 +237,34 @@
       if (!raw) return '';
       const urlPattern = /(https?:\/\/[^\s]+)/g;
       return raw.replace(urlPattern, (url) => {
-        const isInstagram = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/[^\s]+/i.test(url);
-        if (isInstagram) {
-          return `<br><a href="${url}" target="_blank" rel="noopener noreferrer" class="ig-link-card">📷 <span>View Instagram Post / Profile ↗</span></a><br>`;
+        if (/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/[^\s]+/i.test(url)) {
+          return `<br><a href="${url}" target="_blank" rel="noopener noreferrer" class="ig-link-card">📷 <span>View Instagram ↗</span></a><br>`;
         }
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="general-link">${url}</a>`;
       });
     }
 
+    window.handleTyping = function(role) {
+      recordActivity();
+      update(typingRef, { [role]: true });
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        update(typingRef, { [role]: false });
+      }, 1500);
+    };
+
+    onValue(typingRef, (snapshot) => {
+      const val = snapshot.val() || {};
+      const uInd = document.getElementById("userTypingIndicator");
+      const aInd = document.getElementById("adminTypingIndicator");
+      if (uInd) uInd.innerText = val.admin ? "Desk Lead is typing..." : "";
+      if (aInd) aInd.innerText = val.user ? "Employee is typing..." : "";
+    });
+
     async function evaluateSeenReceipts(data) {
       if (!data || !data.messages) return;
       const isCurrentAdmin = window.location.hash === "#admin";
       const targetRole = isCurrentAdmin ? 'user' : 'admin';
-
       let needsUpdate = false;
       const updatedMessages = data.messages.map(m => {
         if (m.sender === targetRole && m.status !== 'seen') {
@@ -254,10 +273,7 @@
         }
         return m;
       });
-
-      if (needsUpdate) {
-        await update(ticketRef, { messages: updatedMessages });
-      }
+      if (needsUpdate) await update(ticketRef, { messages: updatedMessages });
     }
 
     function renderMessages() {
@@ -278,59 +294,36 @@
       const buildHtml = (m, index) => {
         const isMyMsg = m.sender === currentRole;
         const tickMarkup = isMyMsg && m.sender !== 'system'
-          ? (m.status === 'seen' 
-              ? `<span class="receipt-tick receipt-seen" title="Seen">✓✓</span>` 
-              : `<span class="receipt-tick receipt-delivered" title="Delivered">✓</span>`)
+          ? (m.status === 'seen' ? `<span class="receipt-tick receipt-seen">✓✓</span>` : `<span class="receipt-tick receipt-delivered">✓</span>`)
           : '';
-
-        const editButton = (isMyMsg && m.text) 
-          ? `<button class="btn-edit-msg" onclick="editMessage(${index})">Edit</button>` 
-          : '';
-
+        const editButton = (isMyMsg && m.text) ? `<button class="btn-edit-msg" onclick="editMessage(${index})">Edit</button>` : '';
         const editedTag = m.isEdited ? `<span class="edited-indicator">(edited)</span>` : '';
-        const parsedBody = formatMessageText(m.text);
 
         return `
           <div class="chat-entry ${m.sender}">
-            <span class="chat-sender-info">
-              ${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}
-            </span>
+            <span class="chat-sender-info">${m.sender === 'admin' ? 'Desk Operator' : (m.sender === 'system' ? 'System Automated' : empName)} • ${m.time}</span>
             <div class="chat-bubble">
-              ${parsedBody ? `<div>${parsedBody}</div>` : ''}
-              ${m.image ? `<img src="${m.image}" alt="Attachment" />` : ''}
-              <div class="msg-footer">
-                ${editedTag}
-                ${editButton}
-                ${tickMarkup}
-              </div>
+              ${m.text ? `<div>${formatMessageText(m.text)}</div>` : ''}
+              ${m.image ? `<img src="${m.image}" alt="Attachment" onclick="openLightbox('${m.image}')" />` : ''}
+              <div class="msg-footer">${editedTag}${editButton}${tickMarkup}</div>
             </div>
           </div>
         `;
       };
 
       const renderedHtml = list.map((m, idx) => buildHtml(m, idx)).join('');
-
-      if (userBox) {
-        userBox.innerHTML = renderedHtml;
-        userBox.scrollTop = userBox.scrollHeight;
-      }
-
-      if (adminBox) {
-        adminBox.innerHTML = renderedHtml;
-        adminBox.scrollTop = adminBox.scrollHeight;
-      }
+      if (userBox) { userBox.innerHTML = renderedHtml; userBox.scrollTop = userBox.scrollHeight; }
+      if (adminBox) { adminBox.innerHTML = renderedHtml; adminBox.scrollTop = adminBox.scrollHeight; }
     }
 
     window.editMessage = async function(index) {
+      recordActivity();
       if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
-      const originalText = currentTicketData.messages[index].text || "";
-      const updatedText = prompt("Edit your message:", originalText);
-
-      if (updatedText !== null && updatedText.trim() !== "" && updatedText.trim() !== originalText) {
+      const updatedText = prompt("Edit your message:", currentTicketData.messages[index].text || "");
+      if (updatedText !== null && updatedText.trim() !== "") {
         const snap = await get(ticketRef);
         if (snap.exists()) {
-          const data = snap.val();
-          let messages = data.messages || [];
+          let messages = snap.val().messages || [];
           if (messages[index]) {
             messages[index].text = updatedText.trim();
             messages[index].isEdited = true;
@@ -342,106 +335,69 @@
 
     function enforceView() {
       const isHashAdmin = window.location.hash === "#admin";
-      const userCard = document.getElementById("userCard");
-      const userPinView = document.getElementById("userPinAuthView");
-      const adminPinView = document.getElementById("adminPinAuthView");
-      const adminView = document.getElementById("adminView");
+      const uCard = document.getElementById("userCard");
+      const uPin = document.getElementById("userPinAuthView");
+      const aPin = document.getElementById("adminPinAuthView");
+      const aView = document.getElementById("adminView");
 
       if (isHashAdmin) {
-        userPinView.style.display = "none";
-        userCard.style.display = "none";
+        uPin.style.display = "none";
+        uCard.style.display = "none";
         if (isAdminUnlocked) {
-          adminPinView.style.display = "none";
-          adminView.style.display = "flex";
+          aPin.style.display = "none";
+          aView.style.display = "flex";
           renderMessages();
           if (currentTicketData) evaluateSeenReceipts(currentTicketData);
         } else {
-          adminView.style.display = "none";
-          adminPinView.style.display = "flex";
-          setTimeout(() => {
-            const el = document.getElementById("pinCodeInput");
-            if (el) el.focus();
-          }, 50);
+          aView.style.display = "none";
+          aPin.style.display = "flex";
         }
       } else {
-        adminPinView.style.display = "none";
-        adminView.style.display = "none";
+        aPin.style.display = "none";
+        aView.style.display = "none";
         if (isUserUnlocked) {
-          userPinView.style.display = "none";
-          userCard.style.display = "flex";
+          uPin.style.display = "none";
+          uCard.style.display = "flex";
           renderMessages();
           if (currentTicketData) evaluateSeenReceipts(currentTicketData);
         } else {
-          userCard.style.display = "none";
-          userPinView.style.display = "flex";
-          setTimeout(() => {
-            const el = document.getElementById("userPinInput");
-            if (el) el.focus();
-          }, 50);
+          uCard.style.display = "none";
+          uPin.style.display = "flex";
         }
       }
     }
 
     window.verifyUserPin = function() {
-      const input = document.getElementById("userPinInput");
-      const err = document.getElementById("userPinErrorMsg");
-      if (input.value.trim() === SHARED_PIN) {
+      if (document.getElementById("userPinInput").value.trim() === SHARED_PIN) {
         isUserUnlocked = true;
-        err.style.display = "none";
+        lastInteractionTime = Date.now();
+        document.getElementById("userPinErrorMsg").style.display = "none";
         enforceView();
       } else {
-        err.style.display = "block";
-        input.value = "";
+        document.getElementById("userPinErrorMsg").style.display = "block";
       }
     };
 
     window.verifyPin = function() {
-      const input = document.getElementById("pinCodeInput");
-      const err = document.getElementById("pinErrorMsg");
-      if (input.value.trim() === SHARED_PIN) {
+      if (document.getElementById("pinCodeInput").value.trim() === SHARED_PIN) {
         isAdminUnlocked = true;
-        err.style.display = "none";
+        lastInteractionTime = Date.now();
+        document.getElementById("pinErrorMsg").style.display = "none";
         enforceView();
       } else {
-        err.style.display = "block";
-        input.value = "";
+        document.getElementById("pinErrorMsg").style.display = "block";
       }
     };
-
-    document.getElementById("userPinInput").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") verifyUserPin();
-    });
-
-    document.getElementById("pinCodeInput").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") verifyPin();
-    });
 
     window.addEventListener("hashchange", enforceView);
     enforceView();
 
     let lastEscTime = 0;
     let panicActive = false;
-
     function togglePanic() {
       panicActive = !panicActive;
-      const panicEl = document.getElementById("panicScreen");
-      const userCard = document.getElementById("userCard");
-      const userPin = document.getElementById("userPinAuthView");
-      const adminView = document.getElementById("adminView");
-      const pinView = document.getElementById("adminPinAuthView");
-
-      if (panicActive) {
-        panicEl.style.display = "block";
-        userCard.style.display = "none";
-        userPin.style.display = "none";
-        adminView.style.display = "none";
-        pinView.style.display = "none";
-        document.title = "HCLTech Internal Wiki | SOP-8402";
-      } else {
-        panicEl.style.display = "none";
-        document.title = "HCLTech Enterprise Service Management";
-        enforceView();
-      }
+      document.getElementById("panicScreen").style.display = panicActive ? "block" : "none";
+      if (!panicActive) enforceView();
     }
 
     window.addEventListener("keydown", (e) => {
@@ -453,41 +409,20 @@
     });
 
     document.getElementById("userLogoBrand").addEventListener("dblclick", togglePanic);
-    document.getElementById("panicScreen").addEventListener("dblclick", togglePanic);
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        document.title = "HCLTech Intranet | Confluence";
-      } else {
-        if (!panicActive) document.title = "HCLTech Enterprise Service Management";
-        if (currentTicketData && isExpired(currentTicketData)) {
-          clearAllMessages();
-        } else if (currentTicketData) {
-          evaluateSeenReceipts(currentTicketData);
-        }
-      }
-    });
 
     window.clearAllMessages = async function() {
-      try {
-        await remove(ticketRef);
-      } catch (err) {
-        console.error(err);
-      }
+      try { await remove(ticketRef); } catch (err) { console.error(err); }
       currentTicketData = null;
-      resetToForm();
-    };
-
-    function resetToForm() {
       if (window.location.hash !== "#admin") {
         document.getElementById("ticketView").style.display = "none";
         document.getElementById("leanForm").style.display = "block";
         document.getElementById("leanForm").reset();
       }
       renderMessages();
-    }
+    };
 
     window.setQuickReply = function(text) {
+      recordActivity();
       document.getElementById("adminReplyMsg").value = text;
     };
 
@@ -498,21 +433,11 @@
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const maxDim = 800;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height && width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
+          let width = img.width, height = img.height;
+          if (width > height && width > maxDim) { height = Math.round((height * maxDim) / width); width = maxDim; }
+          else if (height > maxDim) { width = Math.round((width * maxDim) / height); height = maxDim; }
+          canvas.width = width; canvas.height = height;
+          canvas.getContext("2d").drawImage(img, 0, 0, width, height);
           callback(canvas.toDataURL("image/jpeg", 0.7));
         };
         img.src = e.target.result;
@@ -521,156 +446,83 @@
     }
 
     window.handleImageUpload = function(event, role) {
+      recordActivity();
       const file = event.target.files[0];
       if (!file) return;
-
       compressImage(file, async (base64Img) => {
         const snap = await get(ticketRef);
         let list = [];
         let createdAtTime = Date.now();
-        let name = "Employee";
-        let idea = "";
-        let id = "";
-
         if (snap.exists()) {
           const data = snap.val();
           list = data.messages || [];
           createdAtTime = data.createdAt || createdAtTime;
-          name = data.name || name;
-          idea = data.idea || idea;
-          id = data.id || id;
         }
-
-        list.push({
-          sender: role,
-          text: '',
-          image: base64Img,
-          status: 'delivered',
-          time: getTime()
-        });
-
-        await update(ticketRef, { 
-          messages: list,
-          createdAt: createdAtTime,
-          name: name,
-          idea: idea,
-          id: id
-        });
+        list.push({ sender: role, text: '', image: base64Img, status: 'delivered', time: getTime() });
+        await update(ticketRef, { messages: list, createdAt: createdAtTime });
         event.target.value = "";
       });
     };
 
-    // Firebase Listener
     onValue(ticketRef, (snapshot) => {
       const data = snapshot.val();
-
-      if (!data) {
-        currentTicketData = null;
-        resetToForm();
-        return;
-      }
-
-      // Hard check: If 30 mins from original creation has passed, wipe immediately
-      if (isExpired(data)) {
-        clearAllMessages();
-        return;
-      }
-
+      if (!data) { currentTicketData = null; renderMessages(); return; }
+      if (isExpired(data)) { clearAllMessages(); return; }
       currentTicketData = data;
-
       if (data.messages && data.messages.length > 0) {
         document.getElementById("leanForm").style.display = "none";
         document.getElementById("ticketView").style.display = "flex";
       }
-
       renderMessages();
-
-      const isCurrentAdmin = window.location.hash === "#admin";
-      if ((isCurrentAdmin && isAdminUnlocked) || (!isCurrentAdmin && isUserUnlocked)) {
-        evaluateSeenReceipts(data);
-      }
-    }, (error) => {
-      console.error("Firebase RTDB sync error:", error);
+      evaluateSeenReceipts(data);
     });
 
-    // Aggressive 2-second background heartbeat ensuring strict 30-min auto-purge
     setInterval(async () => {
-      if (currentTicketData && isExpired(currentTicketData)) {
-        await clearAllMessages();
-      }
+      if (currentTicketData && isExpired(currentTicketData)) await clearAllMessages();
     }, 2000);
 
     window.submitProposal = async function(e) {
       e.preventDefault();
+      recordActivity();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
-      const empName = document.getElementById("empName").value;
       const now = Date.now();
-
       await set(ticketRef, {
-        name: empName,
+        name: document.getElementById("empName").value,
         id: document.getElementById("empId").value,
         idea: initialIdea,
-        createdAt: now, // Firm timestamp from which the 30-min timer starts
+        createdAt: now,
         messages: [
-          { 
-            sender: 'user', 
-            text: `${initialIdea}: ${initialText}`, 
-            status: 'delivered', 
-            time: getTime() 
-          },
-          { 
-            sender: 'system', 
-            text: `Thank you for contacting the HCLTech Continuous Improvement Desk. An authorized desk reviewer has been assigned to your ticket. Please stand by while your inquiry is reviewed.`, 
-            status: 'seen', 
-            time: getTime() 
-          }
+          { sender: 'user', text: `${initialIdea}: ${initialText}`, status: 'delivered', time: getTime() },
+          { sender: 'system', text: `Continuous Improvement Desk session assigned.`, status: 'seen', time: getTime() }
         ]
       });
     };
 
     window.sendUserReply = async function(e) {
       e.preventDefault();
+      recordActivity();
+      update(typingRef, { user: false });
       const input = document.getElementById("userReplyInput");
       const text = input.value.trim();
       if (!text) return;
       input.value = "";
-
       const snap = await get(ticketRef);
-      let list = [];
-      if (snap.exists()) {
-        const data = snap.val();
-        list = data.messages || [];
-      }
-      list.push({ 
-        sender: 'user', 
-        text: text, 
-        status: 'delivered', 
-        time: getTime() 
-      });
-      // Do NOT update createdAt or rolling timers here so 30-minute absolute clock keeps running
+      let list = snap.exists() ? (snap.val().messages || []) : [];
+      list.push({ sender: 'user', text: text, status: 'delivered', time: getTime() });
       await update(ticketRef, { messages: list });
     };
 
     window.sendAdminReply = async function() {
+      recordActivity();
+      update(typingRef, { admin: false });
       const input = document.getElementById("adminReplyMsg");
       const text = input.value.trim();
       if (!text) return;
       input.value = "";
-
       const snap = await get(ticketRef);
-      let list = [];
-      if (snap.exists()) {
-        const data = snap.val();
-        list = data.messages || [];
-      }
-      list.push({ 
-        sender: 'admin', 
-        text: text, 
-        status: 'delivered', 
-        time: getTime() 
-      });
-      // Do NOT update createdAt or rolling timers here
+      let list = snap.exists() ? (snap.val().messages || []) : [];
+      list.push({ sender: 'admin', text: text, status: 'delivered', time: getTime() });
       await update(ticketRef, { messages: list });
     };
   </script>
