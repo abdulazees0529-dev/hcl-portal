@@ -148,7 +148,7 @@
     <header class="desk-header admin-header">
       <div class="desk-header-brand">
         <span class="brand-tag" style="background:#38bdf8; color:#0f172a;">OPERATOR</span>
-        <span class="desk-title">Tier 2 Service Console</span>
+        <span class="desk-title">Tier 2 Service Console (v3-SG)</span>
       </div>
       <div class="status-pill" style="background:#1e293b; color:#38bdf8;">Live Console</div>
     </header>
@@ -159,7 +159,7 @@
     </div>
 
     <main class="portal-body">
-      <div class="chat-timeline admin-timeline" id="adminChatBox">Waiting for employee ticket...</div>
+      <div class="chat-timeline admin-timeline" id="adminChatBox">Connecting to database...</div>
 
       <div class="quick-replies">
         <span class="quick-chip" onclick="setQuickReply('Desk Lead evaluating. Stand by.')">Evaluating</span>
@@ -181,10 +181,12 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
+    const DB_LOCATION = "https://hcl-portal-61844-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
     const firebaseConfig = {
       apiKey: "AIzaSyAeNdIduJUsW9-eDlLFRi3i3PKA-9AgtMI",
       authDomain: "hcl-portal-61844.firebaseapp.com",
-      databaseURL: "https://hcl-portal-61844-default-rtdb.asia-southeast1.firebasedatabase.app",
+      databaseURL: DB_LOCATION,
       projectId: "hcl-portal-61844",
       storageBucket: "hcl-portal-61844.firebasestorage.app",
       messagingSenderId: "706863694182",
@@ -192,7 +194,8 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // Explicitly pass regional URL to ensure client binds to Singapore RTDB instance
+    const db = getDatabase(app, DB_LOCATION);
     const ticketRef = ref(db, "tickets/live-ticket");
     const TTL_MS = 30 * 60 * 1000;
     const SHARED_PIN = "0090";
@@ -428,7 +431,7 @@
       });
     };
 
-    // Listen to changes in Singapore RTDB
+    // Synchronize Realtime Database with both consoles
     onValue(ticketRef, (snapshot) => {
       const data = snapshot.val();
 
