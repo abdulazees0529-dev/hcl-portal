@@ -232,6 +232,7 @@
     let isAdminUnlocked = false;
     let currentTicketData = null; 
     let typingTimer = null;
+    let previousMsgCount = 0; // Tracks message count for auto-scrolling
     
     // --- WebRTC Video & Screen Share ---
     let pc = null;
@@ -269,6 +270,10 @@
     }
 
     window.startCall = async function(role, type) {
+      if (role === 'admin' && (!currentTicketData || !currentTicketData.createdAt)) {
+        alert("Queue is idle. Please wait for an employee to connect first.");
+        return;
+      }
       try {
         await initMedia(type);
         document.getElementById('videoCallModal').style.display = 'flex';
@@ -428,7 +433,8 @@
       if (needsUpdate) await update(ticketRef, { messages: updatedMessages });
     }
 
-    async function renderMessages(decryptedMessages) {
+    // --- Core Rendering & Auto-Scroll ---
+    async function renderMessages(decryptedMessages, forceScrollToBottom = false) {
       const currentRole = (window.location.hash === "#admin") ? 'admin' : 'user';
       const userBox = document.getElementById("userChatBox");
       const adminBox = document.getElementById("adminChatBox");
@@ -465,8 +471,29 @@
       };
 
       const renderedHtml = decryptedMessages.map((m, idx) => buildHtml(m, idx)).join('');
-      if (userBox) { userBox.innerHTML = renderedHtml; handleTimelineScroll('user'); }
-      if (adminBox) { adminBox.innerHTML = renderedHtml; handleTimelineScroll('admin'); }
+      
+      const applyHtml = (box, role) => {
+        if(!box) return;
+        const isAtBottom = (box.scrollHeight - box.scrollTop - box.clientHeight < 100);
+        const oldScrollTop = box.scrollTop;
+        
+        box.innerHTML = renderedHtml;
+        
+        // Smart Scroll: Force down if new message, or if user was already at the bottom
+        if (forceScrollToBottom || isAtBottom) {
+          setTimeout(() => {
+            box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+            const btn = document.getElementById(role + "ScrollBtn");
+            if(btn) btn.style.display = "none";
+          }, 50); // slight delay allows image DOM insertion
+        } else {
+          box.scrollTop = oldScrollTop; // Remember position if reading upwards
+          handleTimelineScroll(role);
+        }
+      };
+
+      applyHtml(userBox, 'user');
+      applyHtml(adminBox, 'admin');
     }
 
     window.editMessage = async function(index) {
@@ -570,6 +597,7 @@
       endCall();
       try { await remove(ticketRef); } catch (err) {}
       currentTicketData = null;
+      previousMsgCount = 0;
       if (window.location.hash !== "#admin") {
         document.getElementById("ticketView").style.display = "none";
         document.getElementById("leanForm").style.display = "block";
@@ -579,6 +607,10 @@
     };
 
     window.setQuickReply = function(text) {
+      if (!currentTicketData || !currentTicketData.createdAt) {
+        alert("Queue is idle. Please wait for an employee to submit a ticket.");
+        return;
+      }
       document.getElementById("adminReplyMsg").value = text;
     };
 
@@ -602,6 +634,11 @@
     }
 
     window.handleImageUpload = function(event, role) {
+      if (role === 'admin' && (!currentTicketData || !currentTicketData.createdAt)) {
+        alert("Queue is idle. Please wait for an employee to submit a ticket.");
+        event.target.value = "";
+        return;
+      }
       const file = event.target.files[0];
       if (!file) return;
       compressImage(file, async (base64Img) => {
@@ -626,9 +663,17 @@
       currentTicketData = data;
       
       let decMsgs = [];
+      let isNewMsg = false;
+
       if (data.messages) {
         document.getElementById("leanForm").style.display = "none";
         document.getElementById("ticketView").style.display = "flex";
+        
+        // Smart scroll check: See if a brand new message was added to the array length
+        if (data.messages.length > previousMsgCount) {
+          isNewMsg = true;
+        }
+        previousMsgCount = data.messages.length;
         
         if (!aesKey) await initCrypto();
 
@@ -639,8 +684,11 @@
             image: m.image ? await decryptData(m.image) : ''
           });
         }
+      } else {
+        previousMsgCount = 0;
       }
-      await renderMessages(decMsgs);
+
+      await renderMessages(decMsgs, isNewMsg);
       evaluateSeenReceipts(data);
     }
 
@@ -693,6 +741,10 @@
     };
 
     window.sendAdminReply = async function() {
+      if (!currentTicketData || !currentTicketData.createdAt) {
+        alert("Queue is idle. Please wait for an employee to submit a ticket.");
+        return;
+      }
       update(typingRef, { admin: false });
       const input = document.getElementById("adminReplyMsg");
       const text = input.value.trim();
