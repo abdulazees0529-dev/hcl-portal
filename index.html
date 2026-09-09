@@ -135,7 +135,7 @@
       <div class="desk-header-brand" id="userLogoBrand"><span class="brand-tag">HCLTech</span><span class="desk-title">Service Desk</span></div>
       <div class="status-pill"><span class="status-dot"></span> Connected</div>
     </header>
-    <div class="ticket-meta-strip"><span>Queue: <strong>Continuous Improvement</strong></span><span>Policy: <strong>30s Idle • 30m Purge</strong></span></div>
+    <div class="ticket-meta-strip"><span>Queue: <strong>Continuous Improvement</strong></span><span>Policy: <strong>Strict 30m Auto-Purge</strong></span></div>
     <main class="portal-body">
       <form id="leanForm" onsubmit="submitProposal(event)">
         <div class="form-grid">
@@ -226,13 +226,11 @@
     const callRef = ref(db, "tickets/live-ticket/call");
 
     const TTL_MS = 30 * 60 * 1000;
-    const IDLE_LIMIT_MS = 30 * 1000;
     const SHARED_PIN = "0090";
 
     let isUserUnlocked = false;
     let isAdminUnlocked = false;
-    let currentTicketData = null; // Holds RAW Encrypted Firebase data
-    let lastInteractionTime = Date.now();
+    let currentTicketData = null; 
     let typingTimer = null;
     
     // --- WebRTC Video & Screen Share ---
@@ -244,6 +242,10 @@
       if (localStream) { localStream.getTracks().forEach(t => t.stop()); }
       try {
         if (type === 'screen') {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+            alert("Screen sharing is only supported on Desktop/Laptop computers. Please use the standard Video Call feature on mobile.");
+            throw new Error("unsupported");
+          }
           localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
         } else {
           localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -267,7 +269,6 @@
     }
 
     window.startCall = async function(role, type) {
-      recordActivity();
       try {
         await initMedia(type);
         document.getElementById('videoCallModal').style.display = 'flex';
@@ -276,12 +277,11 @@
         await peer.setLocalDescription(offer);
         await set(callRef, { caller: role, type: type, active: true, offer: { type: offer.type, sdp: offer.sdp } });
       } catch (err) {
-        if (err.name !== 'NotAllowedError') alert("Media access error: " + err.message);
+        if (err.message !== "unsupported" && err.name !== 'NotAllowedError') alert("Media access error: " + err.message);
       }
     };
 
     window.endCall = async function() {
-      recordActivity();
       if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
       if (pc) { pc.close(); pc = null; }
       document.getElementById('videoCallModal').style.display = 'none';
@@ -299,7 +299,6 @@
         const streamType = callData.type === 'screen' ? "Screen Share" : "Video Call";
         if (confirm(`Incoming ${streamType} from ${callData.caller === 'admin' ? 'Desk Lead' : 'Employee'}. Accept?`)) {
           try {
-            // We just view their screen/camera. No need to force our screen back, just get our camera or audio.
             await initMedia('camera'); 
             document.getElementById('videoCallModal').style.display = 'flex';
             const peer = createPeer();
@@ -358,7 +357,7 @@
     }
 
     async function decryptData(cipherStr) {
-      if (!cipherStr || !cipherStr.includes(":")) return cipherStr; // fallback for unencrypted system msgs
+      if (!cipherStr || !cipherStr.includes(":")) return cipherStr; 
       try {
         const parts = cipherStr.split(":");
         const iv = base64ToBuffer(parts[0]);
@@ -377,22 +376,6 @@
     };
     window.closeLightbox = function() { document.getElementById("lightboxModal").style.display = "none"; };
 
-    function recordActivity() { lastInteractionTime = Date.now(); }
-    ['mousedown', 'mousemove', 'keypress', 'touchstart', 'scroll', 'click'].forEach(e => {
-      window.addEventListener(e, recordActivity, { passive: true });
-    });
-
-    setInterval(() => {
-      if ((isUserUnlocked || isAdminUnlocked) && (Date.now() - lastInteractionTime >= IDLE_LIMIT_MS)) {
-        isUserUnlocked = false; isAdminUnlocked = false;
-        document.getElementById("userPinInput").value = "";
-        document.getElementById("pinCodeInput").value = "";
-        closeLightbox();
-        if (document.getElementById('videoCallModal').style.display === 'flex') endCall();
-        enforceView();
-      }
-    }, 1000);
-
     function getTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
     function isExpired(data) { return (data && data.createdAt) ? ((Date.now() - data.createdAt) >= TTL_MS) : false; }
 
@@ -407,7 +390,7 @@
     }
 
     window.handleTyping = function(role) {
-      recordActivity(); update(typingRef, { [role]: true });
+      update(typingRef, { [role]: true });
       clearTimeout(typingTimer);
       typingTimer = setTimeout(() => update(typingRef, { [role]: false }), 1500);
     };
@@ -421,7 +404,6 @@
     });
 
     window.handleTimelineScroll = function(role) {
-      recordActivity();
       const el = (role === 'admin') ? document.getElementById("adminChatBox") : document.getElementById("userChatBox");
       const btn = (role === 'admin') ? document.getElementById("adminScrollBtn") : document.getElementById("userScrollBtn");
       if (!el || !btn) return;
@@ -430,7 +412,6 @@
     };
 
     window.scrollToBottom = function(role) {
-      recordActivity();
       const el = (role === 'admin') ? document.getElementById("adminChatBox") : document.getElementById("userChatBox");
       const btn = (role === 'admin') ? document.getElementById("adminScrollBtn") : document.getElementById("userScrollBtn");
       if (el) { el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); if (btn) btn.style.display = "none"; }
@@ -447,7 +428,6 @@
       if (needsUpdate) await update(ticketRef, { messages: updatedMessages });
     }
 
-    // --- Core Rendering & Decryption ---
     async function renderMessages(decryptedMessages) {
       const currentRole = (window.location.hash === "#admin") ? 'admin' : 'user';
       const userBox = document.getElementById("userChatBox");
@@ -490,9 +470,7 @@
     }
 
     window.editMessage = async function(index) {
-      recordActivity();
       if (!currentTicketData || !currentTicketData.messages || !currentTicketData.messages[index]) return;
-      // We must decrypt the RAW data to edit it
       const decText = await decryptData(currentTicketData.messages[index].text);
       const updatedText = prompt("Edit encrypted message:", decText);
       if (updatedText !== null && updatedText.trim() !== "") {
@@ -509,7 +487,6 @@
     };
 
     window.deleteMessage = async function(index) {
-      recordActivity();
       if (!confirm("Permanently delete this entry for both sides?")) return;
       const snap = await get(ticketRef);
       if (snap.exists()) {
@@ -549,7 +526,7 @@
 
     window.verifyUserPin = async function() {
       if (document.getElementById("userPinInput").value.trim() === SHARED_PIN) {
-        isUserUnlocked = true; lastInteractionTime = Date.now();
+        isUserUnlocked = true;
         document.getElementById("userPinErrorMsg").style.display = "none";
         await enforceView();
         triggerFirebaseReRead();
@@ -560,7 +537,7 @@
 
     window.verifyPin = async function() {
       if (document.getElementById("pinCodeInput").value.trim() === SHARED_PIN) {
-        isAdminUnlocked = true; lastInteractionTime = Date.now();
+        isAdminUnlocked = true;
         document.getElementById("pinErrorMsg").style.display = "none";
         await enforceView();
         triggerFirebaseReRead();
@@ -602,7 +579,6 @@
     };
 
     window.setQuickReply = function(text) {
-      recordActivity();
       document.getElementById("adminReplyMsg").value = text;
     };
 
@@ -626,7 +602,6 @@
     }
 
     window.handleImageUpload = function(event, role) {
-      recordActivity();
       const file = event.target.files[0];
       if (!file) return;
       compressImage(file, async (base64Img) => {
@@ -637,7 +612,6 @@
           list = data.messages || []; createdAtTime = data.createdAt || createdAtTime;
         }
         
-        // Encrypt Image Base64 String
         const encImage = await encryptData(base64Img);
         list.push({ sender: role, text: '', image: encImage, status: 'delivered', time: getTime() });
         await update(ticketRef, { messages: list, createdAt: createdAtTime });
@@ -649,15 +623,13 @@
       if (!data) { currentTicketData = null; renderMessages([]); return; }
       if (isExpired(data)) { clearAllMessages(); return; }
       
-      currentTicketData = data; // Keep RAW Encrypted cache
+      currentTicketData = data;
       
-      // Decrypt for UI
       let decMsgs = [];
       if (data.messages) {
         document.getElementById("leanForm").style.display = "none";
         document.getElementById("ticketView").style.display = "flex";
         
-        // Ensure Crypto is ready
         if (!aesKey) await initCrypto();
 
         for (let m of data.messages) {
@@ -677,7 +649,6 @@
     }
 
     onValue(ticketRef, async (snapshot) => {
-      // Only process automatically if the user is unlocked to save processing
       if (isUserUnlocked || isAdminUnlocked) {
         await processFirebaseData(snapshot.val());
       }
@@ -688,7 +659,7 @@
     }, 2000);
 
     window.submitProposal = async function(e) {
-      e.preventDefault(); recordActivity();
+      e.preventDefault();
       const initialText = document.getElementById("suggestion").value;
       const initialIdea = document.getElementById("leanIdea").value;
       
@@ -708,7 +679,7 @@
     };
 
     window.sendUserReply = async function(e) {
-      e.preventDefault(); recordActivity(); update(typingRef, { user: false });
+      e.preventDefault(); update(typingRef, { user: false });
       const input = document.getElementById("userReplyInput");
       const text = input.value.trim();
       if (!text) return; input.value = "";
@@ -722,7 +693,7 @@
     };
 
     window.sendAdminReply = async function() {
-      recordActivity(); update(typingRef, { admin: false });
+      update(typingRef, { admin: false });
       const input = document.getElementById("adminReplyMsg");
       const text = input.value.trim();
       if (!text) return; input.value = "";
