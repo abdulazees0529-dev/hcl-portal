@@ -155,7 +155,9 @@
         <div class="typing-bar" id="userTypingIndicator"></div>
         <form class="chat-input-bar" onsubmit="sendUserReply(event)">
           <input type="file" id="userPhotoInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, 'user')" />
-          <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()">📎</button>
+          <input type="file" id="userCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleImageUpload(event, 'user')" />
+          <button type="button" class="btn-attach" onclick="document.getElementById('userPhotoInput').click()" title="Gallery">📎</button>
+          <button type="button" class="btn-attach" onclick="document.getElementById('userCameraInput').click()" title="Take Photo">📸</button>
           <button type="button" class="btn-attach btn-call" onclick="startCall('user', 'camera')" title="Video Call">📹</button>
           <button type="button" class="btn-attach btn-screen" onclick="startCall('user', 'screen')" title="Share Screen">🖥️</button>
           <input type="text" id="userReplyInput" placeholder="Send encrypted reply..." oninput="handleTyping('user')" />
