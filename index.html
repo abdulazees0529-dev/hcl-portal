@@ -228,13 +228,13 @@
     const callRef = ref(db, "tickets/live-ticket/call");
 
     const TTL_MS = 30 * 60 * 1000;
-    const SHARED_PIN = "0090";
+    const SHARED_PIN = "2345"; // PIN CHANGED TO 2345
 
     let isUserUnlocked = false;
     let isAdminUnlocked = false;
     let currentTicketData = null; 
     let typingTimer = null;
-    let previousMsgCount = 0; // Tracks message count for auto-scrolling
+    let previousMsgCount = 0; 
     
     // --- WebRTC Video & Screen Share ---
     let pc = null;
@@ -246,7 +246,7 @@
       try {
         if (type === 'screen') {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-            alert("Screen sharing is only supported on Desktop/Laptop computers. Please use the standard Video Call feature on mobile.");
+            alert("Screen sharing is only supported on Desktop/Laptop computers.");
             throw new Error("unsupported");
           }
           localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
@@ -429,7 +429,10 @@
       const targetRole = (window.location.hash === "#admin") ? 'user' : 'admin';
       let needsUpdate = false;
       const updatedMessages = data.messages.map(m => {
-        if (m.sender === targetRole && m.status !== 'seen') { needsUpdate = true; return { ...m, status: 'seen' }; }
+        if (m.sender === targetRole && m.status !== 'seen') { 
+          needsUpdate = true; 
+          return { ...m, status: 'seen', seenAt: Date.now() }; 
+        }
         return m;
       });
       if (needsUpdate) await update(ticketRef, { messages: updatedMessages });
@@ -481,15 +484,14 @@
         
         box.innerHTML = renderedHtml;
         
-        // Smart Scroll: Force down if new message, or if user was already at the bottom
         if (forceScrollToBottom || isAtBottom) {
           setTimeout(() => {
             box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
             const btn = document.getElementById(role + "ScrollBtn");
             if(btn) btn.style.display = "none";
-          }, 50); // slight delay allows image DOM insertion
+          }, 50);
         } else {
-          box.scrollTop = oldScrollTop; // Remember position if reading upwards
+          box.scrollTop = oldScrollTop; 
           handleTimelineScroll(role);
         }
       };
@@ -553,6 +555,7 @@
       }
     }
 
+    // --- Burn On Fail (Incorrect PIN triggers auto-wipe) ---
     window.verifyUserPin = async function() {
       if (document.getElementById("userPinInput").value.trim() === SHARED_PIN) {
         isUserUnlocked = true;
@@ -560,7 +563,9 @@
         await enforceView();
         triggerFirebaseReRead();
       } else {
+        document.getElementById("userPinErrorMsg").innerText = "Invalid PIN. Security wipe triggered.";
         document.getElementById("userPinErrorMsg").style.display = "block";
+        await clearAllMessages(); // Wipe Database Instantly
       }
     };
 
@@ -571,7 +576,9 @@
         await enforceView();
         triggerFirebaseReRead();
       } else {
+        document.getElementById("pinErrorMsg").innerText = "Invalid PIN. Security wipe triggered.";
         document.getElementById("pinErrorMsg").style.display = "block";
+        await clearAllMessages(); // Wipe Database Instantly
       }
     };
 
@@ -652,26 +659,37 @@
         }
         
         const encImage = await encryptData(base64Img);
-        list.push({ sender: role, text: '', image: encImage, status: 'delivered', time: getTime() });
+        list.push({ sender: role, text: '', image: encImage, status: 'delivered', time: getTime(), timestamp: Date.now() });
         await update(ticketRef, { messages: list, createdAt: createdAtTime });
         event.target.value = "";
       });
     };
 
     async function processFirebaseData(data) {
-      if (!data) { currentTicketData = null; renderMessages([]); return; }
-      if (isExpired(data)) { clearAllMessages(); return; }
+      if (!data) { 
+        currentTicketData = null; 
+        previousMsgCount = 0;
+        if (window.location.hash !== "#admin") {
+          document.getElementById("ticketView").style.display = "none";
+          document.getElementById("leanForm").style.display = "block";
+          document.getElementById("leanForm").reset();
+        }
+        renderMessages([]); 
+        return; 
+      }
       
       currentTicketData = data;
       
+      // Keep chat UI open even if all messages delete, as long as ticket exists
+      if (data.createdAt) {
+        document.getElementById("leanForm").style.display = "none";
+        document.getElementById("ticketView").style.display = "flex";
+      }
+
       let decMsgs = [];
       let isNewMsg = false;
 
       if (data.messages) {
-        document.getElementById("leanForm").style.display = "none";
-        document.getElementById("ticketView").style.display = "flex";
-        
-        // Smart scroll check: See if a brand new message was added to the array length
         if (data.messages.length > previousMsgCount) {
           isNewMsg = true;
         }
@@ -704,8 +722,27 @@
       }
     });
 
+    // --- Smart Auto-Delete Loop (15s Seen / 120s Unseen) ---
     setInterval(async () => {
-      if (currentTicketData && isExpired(currentTicketData)) await clearAllMessages();
+      if (currentTicketData) {
+        if (isExpired(currentTicketData)) {
+          await clearAllMessages();
+        } else if (currentTicketData.messages && currentTicketData.messages.length > 0) {
+          let changed = false;
+          const now = Date.now();
+          const kept = currentTicketData.messages.filter(m => {
+            const ts = m.timestamp || now;
+            // Unseen for > 2 minutes (120,000 ms)
+            if (m.status !== 'seen' && (now - ts > 120000)) { changed = true; return false; }
+            // Seen for > 15 seconds (15,000 ms)
+            if (m.status === 'seen' && m.seenAt && (now - m.seenAt > 15000)) { changed = true; return false; }
+            return true;
+          });
+          if (changed) {
+            await update(ticketRef, { messages: kept });
+          }
+        }
+      }
     }, 2000);
 
     window.submitProposal = async function(e) {
@@ -722,8 +759,8 @@
         idea: initialIdea,
         createdAt: Date.now(),
         messages: [
-          { sender: 'user', text: encText, status: 'delivered', time: getTime() },
-          { sender: 'system', text: `Continuous Improvement Desk session assigned. E2E Encryption Active.`, status: 'seen', time: getTime() }
+          { sender: 'user', text: encText, status: 'delivered', time: getTime(), timestamp: Date.now() },
+          { sender: 'system', text: `Continuous Improvement Desk session assigned. E2E Encryption Active.`, status: 'seen', time: getTime(), timestamp: Date.now(), seenAt: Date.now() }
         ]
       });
     };
@@ -738,7 +775,7 @@
       let list = snap.exists() ? (snap.val().messages || []) : [];
       
       const encText = await encryptData(text);
-      list.push({ sender: 'user', text: encText, status: 'delivered', time: getTime() });
+      list.push({ sender: 'user', text: encText, status: 'delivered', time: getTime(), timestamp: Date.now() });
       await update(ticketRef, { messages: list });
     };
 
@@ -756,7 +793,7 @@
       let list = snap.exists() ? (snap.val().messages || []) : [];
       
       const encText = await encryptData(text);
-      list.push({ sender: 'admin', text: encText, status: 'delivered', time: getTime() });
+      list.push({ sender: 'admin', text: encText, status: 'delivered', time: getTime(), timestamp: Date.now() });
       await update(ticketRef, { messages: list });
     };
   </script>
